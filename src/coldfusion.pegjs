@@ -1,13 +1,13 @@
 // https://medium.com/@daffl/beyond-regex-writing-a-parser-in-javascript-8c9ed10576a6
 
-// comment like this
+
 start = (datatype)*
 
-datatype = node / closedNode / comment / string / variable / func
+datatype = node / closedNode / comment / string / func / variable
 
 
 text =
-  characters:$((!lb)(!clb) c:any (!rb)(!closeComment))+ {
+  characters:$((!lab)(!clab) c:any (!rab)(!closeComment))+ {
     return {
         type: 'text',
         value: characters
@@ -36,36 +36,36 @@ closedNode =
     }
   }
 
-lb "left bracket" = "<"
-clb "closing left bracket" = "</"
-rb "right bracket" = ">"
-crb "closing right bracket" = "/>"
+lab = "<" // left angle bracket
+clab = "</" // closing left angle bracket
+rab = ">" // right angle bracket
+crab = "/>" // closing right angle bracket
 any = .
 
 openTag =
-  lb main:variable attributes:attribute* ws* rb {
+  lab main:variable attributes:attribute* ws* rab {
     return {
       type: 'tag',
       closing: false,
-      name: main,
+      name: main.value,
       attributes: attributes
     }
   }
 
 closeTag =
-  clb main:variable ws* rb {
+  clab main:variable ws* rab {
     return {
       type: 'tag',
       closing: true,
-      name: main
+      name: main.value
     }
   }
 
 selfClosedTag =
-  lb main:variable attributes:attribute* ws* ( rb / crb ) {
+  lab main:variable attributes:attribute* ws* ( rab / crab ) {
     return {
       type: 'tag',
-      name: main,
+      name: main.value,
       attributes: attributes
     }
   }
@@ -93,11 +93,11 @@ It kind of seems logical to make data structures for each CF type that can exist
   * query???
 */
 attribute =
-  ws+ prop:variable val:(ws* eq ws* val:datatype {return val;})? { 
+  ws+ attr:datatype value:(ws* eq ws* val:datatype {return val;})? { 
     return {
       type: 'attribute',
-      attr: prop,
-      value: val
+      attr: attr,
+      value: value
     };
   }
 
@@ -154,7 +154,7 @@ singlequote_character =
 
 // original
 variable "variable" =
-  value:$([0-9a-zA-Z_\$]+) {
+  value:$([0-9a-zA-Z_\$#]+) {
     return {
       type: 'variable',
       value: value
@@ -169,14 +169,32 @@ variable "variable" =
 // FUNCTION CALL
 // ==============
 
+// TODO: what are valid function characters?
 func "function call" =
-  v:variable lp args:argument* rp {
+  v:$([a-zA-Z0-9_]+) lp args:argument* rp {
     return {
-      type: 'function call',
+      type: 'function',
       func: v,
       args: args
     }
   }
+
+// func "func" = v:$([a-zA-Z]+) lp args:args1* rp {
+// 	return {
+//     value: v,
+//     args: args
+//     }
+// }
+
+lp = "("
+rp = ")"
+
+// args1 = $([a-z]+)
+
+// lp = "(" // left paren
+// lp = [\(]
+// lp = [\x26]
+// rp = [\)] // right paren
 
 // ignore commas on either side
 // may include named arguments, may just be a value
@@ -271,8 +289,10 @@ escape_character = "\\"
 doublequote "double quote" = '"'
 singlequote "single quote" = "'"
 comma = ","
-lp = "(" // left paren
-rp = ")" // right paren
+
+
+
+
 
 // most ascii characters except: non-printing chars(x0-x1F), quotation marks (x22), single quotes (x27), backslash (x5C)
 // unescaped = [\x20-\x21\x23-\x26\x28\x5B\x5D-\u10FFFF]

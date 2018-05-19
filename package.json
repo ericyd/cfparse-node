@@ -1,0 +1,32 @@
+{
+  "name": "cfparse",
+  "version": "0.1.0",
+  "description": "ColdFusion parser for Node.js [WIP]",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest",
+    "prettier:config": "prettier --write --single-quote",
+    "prettier": "npm run prettier:config -- \"{,!(node_modules),./**/}*.{js,ts,css,scss}\" \"tsconfig.json\" ",
+    "fmt": "npm run prettier",
+    "build-parser": "pegjs -o src/parser.js grammar/coldfusion.pegjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ericyd/cfparse-node.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ericyd/cfparse-node/issues"
+  },
+  "homepage": "https://github.com/ericyd/cfparse-node#readme",
+  "devDependencies": {
+    "jest": "^22.4.4",
+    "pegjs": "^0.10.0",
+    "prettier": "^1.12.1"
+  }
+}

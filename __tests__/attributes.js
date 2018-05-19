@@ -1,0 +1,65 @@
+/*
+In tag syntax, attributes can be essentially anything
+	(with the possible exception of another tag???)
+
+Should be able to handle
+* function calls
+* dereferenced variables
+* strings
+* numbers
+* boolean operators
+* and probably others as well?
+*/
+
+const parse = require('../src/parser');
+
+const util = require('util');
+// to inspect a tree:
+// console.log(util.inspect(tree, {depth: null, colors: true}))
+
+describe.only('attributs', () => {
+  test('should allow props without values', () => {
+    const tree = parse(`<option disabled></option>`);
+    expect(tree[0].type).toBe('node');
+    expect(tree[0].tag.name).toBe('option');
+    expect(tree[0].tag.attributes[0].attr).toBe('disabled');
+  });
+
+  test('should allow function calls as attributes', () => {
+    const tree = parse(`<cfset myFunction() />`);
+    expect(tree[0].type).toBe('node');
+    expect(tree[0].tag.name).toBe('cfset');
+    expect(tree[0].tag.attributes[0].attr).toBe('myFunction()');
+  });
+
+  test.skip('should allow function calls as attribute values', () => {
+    const tree = parse(`<cfset myVar = myFunction() />`);
+    expect(tree[0].type).toBe('node');
+    expect(tree[0].tag.name).toBe('cfset');
+    expect(tree[0].attributes[0].attr).toBe('myVar');
+    expect(tree[0].tag.attributes[0].value).toBe('myFunction()');
+  });
+
+  test('should allow boolean operators', () => {
+    const tree = parse(`<cfif 1 NE 2><cfset i = '0' /></cfif>`);
+    expect(tree[0].type).toBe('node');
+    expect(tree[0].tag.name).toBe('cfif');
+    expect(tree[0].tag.attributes[0].attr).toBe('1');
+    expect(tree[0].tag.attributes[0].value).toBe(null);
+    expect(tree[0].tag.attributes[1].attr).toBe('NE');
+    expect(tree[0].tag.attributes[1].value).toBe(null);
+    expect(tree[0].tag.attributes[2].attr).toBe('2');
+    expect(tree[0].tag.attributes[2].value).toBe(null);
+  });
+
+  test('should allow struct literals as values', () => {});
+  test('should allow array literals as values', () => {});
+  test('should allow number literals as values', () => {});
+  test('should accept deferenced variables as values', () => {
+    const tree = parse(`<cfdump var = #myVar# />`);
+    expect(tree[0].type).toBe('node');
+    expect(tree[0].tag.name).toBe('cfdump');
+    expect(tree[0].attributes[0].attr).toBe('var');
+    expect(tree[0].tag.attributes[0].value).toBe('#myVar#');
+  });
+});

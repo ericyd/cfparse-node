@@ -103,50 +103,50 @@ describe('struct', () => {
 
   test('should not allow functions as keys', () => {
     expect(() => {
-      parse(`{testing() : test}`)
+      parse(`{testing() : test}`);
     }).toThrow();
-  })
+  });
 
   test('should not allow struct as keys', () => {
     expect(() => {
-      parse(`{ {test: test} : test}`)
+      parse(`{ {test: test} : test}`);
     }).toThrow();
-  })
+  });
 
   test('should not allow array as keys', () => {
     expect(() => {
-      parse(`{ [1,2,3] : test}`)
+      parse(`{ [1,2,3] : test}`);
     }).toThrow();
-  })
+  });
 
   test('should not allow tags as keys', () => {
     expect(() => {
-      parse(`{ <cfset i = 0 /> : test}`)
+      parse(`{ <cfset i = 0 /> : test}`);
     }).toThrow();
-  })
+  });
 
   test('should not allow keys without values', () => {
     expect(() => {
-      parse(`{ test }`)
+      parse(`{ test }`);
     }).toThrow();
-  })
+  });
 
   test('should not allow key/value pairs without comma delimiters', () => {
     // TODO: this passes because commas are optional in the parsing grammar.
     // need to determine if there is a way to only make them optional for the final pair
     expect(() => {
-      parse(`{ test: testing code: coding }`)
+      parse(`{ test: testing code: coding }`);
     }).toThrow();
-  })
+  });
 
   test('should not allow alternative delimiters', () => {
     expect(() => {
-      parse(`{ test: testing ; code: coding }`)
+      parse(`{ test: testing ; code: coding }`);
     }).toThrow();
     expect(() => {
-      parse(`{ test: testing | code: coding }`)
+      parse(`{ test: testing | code: coding }`);
     }).toThrow();
-  })
+  });
 
   test('should allow empty struct literals', () => {
     const tree = parse(`{}`);

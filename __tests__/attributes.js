@@ -60,6 +60,7 @@ describe('attributs', () => {
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfdump');
     expect(tree[0].attributes[0].attr.value).toBe('var');
-    expect(tree[0].attributes[0].value.value).toBe('#myVar#');
+    expect(tree[0].attributes[0].value.value).toBe('myVar');
+    expect(tree[0].attributes[0].value.useNumberSign).toBe(true);
   });
 });

@@ -145,10 +145,15 @@ singlequote_character =
 
 // original
 variable "variable" =
-  value:$([0-9a-zA-Z_\$#]+) {
+  h1:hash? value:$([0-9a-zA-Z_\$]+) h2:hash? {
+    // unmatched hashtags
+    if (h1 && !h2 || !h1 && h2) {
+      return false
+    }
     return {
       type: 'variable',
-      value: value
+      value: value,
+      useNumberSign: !!(h1 && h2)
     }
   }
 
@@ -162,11 +167,16 @@ variable "variable" =
 
 // TODO: what are valid function characters?
 func "function call" =
-  v:$([a-zA-Z0-9_]+) lp args:argument* rp {
+  h1:hash? v:$([a-zA-Z0-9_]+) ws? lp args:argument* ws* rp h2:hash? {
+    // unmatched hashtags
+    if (h1 && !h2 || !h1 && h2) {
+      return false
+    }
     return {
       type: 'function',
       name: v,
-      args: args
+      args: args,
+      useNumberSign: !!(h1 && h2)
     }
   }
 
@@ -176,7 +186,7 @@ func "function call" =
 // may include named arguments, may just be a value
 // value can be any valid coldfusion datatype (I think)
 argument "argument" = 
-  comma* arg:(variable ws* eq ws*)? val:datatype comma* { 
+  ws* comma? arg:( a:(variable / string) ws* eq ws* { return a; })? val:datatype comma? { 
     return {
       type: 'attribute',
       arg: arg,
@@ -286,6 +296,7 @@ colon = ":"
 comma = ","
 doublequote "double quote" = '"'
 singlequote "single quote" = "'"
+hash = "#"
 
 // brackets
 lp = "(" // left paren

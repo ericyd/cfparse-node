@@ -102,9 +102,7 @@ describe('tags', () => {
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfdiv');
     expect(tree[0].attributes[0].attr.value).toBe('class');
-    expect(tree[0].attributes[0].value.value).toBe(
-      '<cfif true>active</cfif>'
-    );
+    expect(tree[0].attributes[0].value.value).toBe('<cfif true>active</cfif>');
   });
 
   // TODO: this breaks the parser

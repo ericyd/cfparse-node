@@ -29,7 +29,7 @@ describe('attributs', () => {
     const tree = parse(`<cfset myFunction() />`);
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfset');
-    expect(tree[0].attributes[0].attr.func).toBe('myFunction');
+    expect(tree[0].attributes[0].attr.name).toBe('myFunction');
   });
 
   test('should allow function calls as attribute values', () => {
@@ -37,7 +37,7 @@ describe('attributs', () => {
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfset');
     expect(tree[0].attributes[0].attr.value).toBe('myVar');
-    expect(tree[0].attributes[0].value.func).toBe('myFunction');
+    expect(tree[0].attributes[0].value.name).toBe('myFunction');
   });
 
   test('should allow boolean operators', () => {

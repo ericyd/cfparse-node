@@ -82,27 +82,6 @@ text =
 
 
 
-/*
-TODO: I probably need to be more explicit with my data types in everything other than comments
-For example, if a value can be a string OR anything else, when rebuilding
-the AST into a document the string will need to be identified so it can be wrapped in quotes,
-whereas other things will need to NOT be wrapped in quotes.
-Therefore, I probably need a data structure for "value" instead of just returning the raw string,
-and the data structure needs to be consistent
-
-Probably should abstract "attribute" into a "prop" ("value")? data structure.
-props could theoretically be strings too (I think???) so we might need to track type there too 
-
-Also, do I need a number type???
-It kind of seems logical to make data structures for each CF type that can exist directly in source code
-  * number
-  * string
-  * struct
-  * array
-  * function call???
-  * variable???
-  * query???
-*/
 attribute =
   ws+ attr:datatype value:(ws* eq ws* val:datatype {return val;})? { 
     return {
@@ -186,7 +165,7 @@ func "function call" =
   v:$([a-zA-Z0-9_]+) lp args:argument* rp {
     return {
       type: 'function',
-      func: v,
+      name: v,
       args: args
     }
   }
@@ -220,7 +199,7 @@ number "number" = [0-9\.]+
 // STRUCT
 // =========
 struct "struct literal" =
-  lcb ws* collection:(kvp:keyValuePair comma? ws* { return kvp; })* ws* rcb {
+  lcb ws* collection:(kvp:keyValuePair ws* comma? ws* { return kvp; })* ws* rcb {
     return {
       type: 'struct',
       entries: collection

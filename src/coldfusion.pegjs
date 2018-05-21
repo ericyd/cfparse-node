@@ -1,52 +1,55 @@
 // https://medium.com/@daffl/beyond-regex-writing-a-parser-in-javascript-8c9ed10576a6
 
 
-start = (datatype)*
 
-datatype = node / closedNode / comment / string / func / variable
+// start = (datatype)*
+start = (scriptContext / tagContext)*
+
+scriptContext = cfscript / scriptComment / script
+tagContext = tag / selfClosedTag / tagComment / datatype
+
+datatype = string / func / variable / struct / array // number?
 
 
-text =
-  characters:$((!lab)(!clab) c:any (!rab)(!closeComment))+ {
-    return {
-        type: 'text',
-        value: characters
-    }
-  }
+// SCRIPT CONTEXT
+// ================
 
-node =
-  e:openTag ws* a:( datatype / text )* ws* f:closeTag {
+cfscript = "//"
+scriptComment = "//"
+script = "//"
+
+
+
+// TAG CONTEXT
+// ================
+
+tag =
+  e:openTag ws* a:( tagContext / datatype / text )* ws* f:closeTag {
     if (e.name !== f.name) {
       return false;
     }
     return {
-      type: 'node',
+      type: 'tag',
       selfClosed: false,
-      tag: e,
+      name: e.name,
+      attributes: e.attributes,
       content: a
     };
   }
 
-closedNode =
-  t:selfClosedTag {
+selfClosedTag =
+  lab main:variable attributes:attribute* ws* ( rab / crab ) {
     return {
-      type: 'node',
+      type: 'tag',
       selfClosed: true,
-      tag: t
+      name: main.value,
+      attributes: attributes
     }
   }
-
-lab = "<" // left angle bracket
-clab = "</" // closing left angle bracket
-rab = ">" // right angle bracket
-crab = "/>" // closing right angle bracket
-any = .
 
 openTag =
   lab main:variable attributes:attribute* ws* rab {
     return {
-      type: 'tag',
-      closing: false,
       name: main.value,
       attributes: attributes
     }
@@ -55,20 +58,28 @@ openTag =
 closeTag =
   clab main:variable ws* rab {
     return {
-      type: 'tag',
-      closing: true,
-      name: main.value
+      name: main.value,
+      attributes: []
     }
   }
 
-selfClosedTag =
-  lab main:variable attributes:attribute* ws* ( rab / crab ) {
+
+
+
+
+text =
+  characters:$((!lab)(!clab) c:any (!rab)(!tagCloseComment))+ {
     return {
-      type: 'tag',
-      name: main.value,
-      attributes: attributes
+        type: 'text',
+        value: characters
     }
   }
+
+
+
+
+
+
 
 
 /*
@@ -104,17 +115,18 @@ attribute =
 
 
 
-// COMMENTS
+// TAG COMMENTS
 //============
 
-openComment = "<!---"
-closeComment = "--->"
-commentText = $((!openComment)(!closeComment) . )+
+tagOpenComment = "<!---"
+tagCloseComment = "--->"
+tagCommentText = $((!tagOpenComment)(!tagCloseComment) . )+
 // for now, going to skip any whitespace handling with comments,
 // formatting will be preserved exactly as written
-comment "comment" = openComment t:commentText* closeComment {
+tagComment "tag comment" = tagOpenComment t:tagCommentText* tagCloseComment {
   return {
     type: 'comment',
+    tagContext: true,
     content: t.join(''),
     singleLine: location().start.line === location().end.line
   }
@@ -179,22 +191,7 @@ func "function call" =
     }
   }
 
-// func "func" = v:$([a-zA-Z]+) lp args:args1* rp {
-// 	return {
-//     value: v,
-//     args: args
-//     }
-// }
 
-lp = "("
-rp = ")"
-
-// args1 = $([a-z]+)
-
-// lp = "(" // left paren
-// lp = [\(]
-// lp = [\x26]
-// rp = [\)] // right paren
 
 // ignore commas on either side
 // may include named arguments, may just be a value
@@ -222,32 +219,49 @@ number "number" = [0-9\.]+
 
 // STRUCT
 // =========
-struct "struct" =
-  lcb collection:keyValCollection rcb {
+struct "struct literal" =
+  lcb ws* collection:(kvp:keyValuePair comma? ws* { return kvp; })* ws* rcb {
     return {
       type: 'struct',
       entries: collection
     }
   }
 
-lcb = "{" // left curly brace
-rcb = "}" // right curly brace
-
-/*
-TODO: ok this is getting overly abstracted, let's start returning some raw arrays;
-never will be a need to identify that my data type is a "key value collection"
-*/
-keyValCollection "key value collection" =
-  (kvp:keyValuePair comma? { return kvp; })*
-
 keyValuePair "key value pair" =
-  key:(variable / string) (eq / colon) value:(datatype) {
+  key:(variable / string) ws* (eq / colon) ws* value:(datatype) {
     return {
       type: 'key value pair', // necessary data?
       key: key,
       value: value
     }
   }
+
+
+
+
+
+
+
+
+
+// ARRAY
+// =========
+array "array literal" =
+  lsb ws* collection:(d:datatype comma? ws* {return d;})* ws* rsb {
+    return {
+      type: 'array',
+      entries: collection
+    }
+  }
+
+
+
+
+
+
+
+
+
 
 
 // argument = path
@@ -283,21 +297,35 @@ escape_sequence "escape sequence" = escape_character sequence:(
 
 
 
+
+// PUNCTUATION
+// ==============
+
+escape_character = "\\"
 eq = "="
 colon = ":"
-escape_character = "\\"
+comma = ","
 doublequote "double quote" = '"'
 singlequote "single quote" = "'"
-comma = ","
 
-
-
-
+// brackets
+lp = "(" // left paren
+rp = ")" // right paren
+lcb = "{" // left curly brace
+rcb = "}" // right curly brace
+lsb = "[" // left square brace
+rsb = "]" // right square brace
+lab = "<" // left angle bracket
+clab = "</" // closing left angle bracket
+rab = ">" // right angle bracket
+crab = "/>" // closing right angle bracket
 
 // most ascii characters except: non-printing chars(x0-x1F), quotation marks (x22), single quotes (x27), backslash (x5C)
 // unescaped = [\x20-\x21\x23-\x26\x28\x5B\x5D-\u10FFFF]
 unescaped = [\x20-\x21\x23-\x5B\x5D-\u10FFFF]
 HEXDIG = [0-9a-f]i
+
+any = .
 
 ws "whitespace" = [ \t\n\r]
 nonws "non whitespace" = [^ \t\n\r]

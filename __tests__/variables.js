@@ -11,9 +11,6 @@ describe('variables', () => {
     expect(tree[0].value).toBe('myVar');
   });
 
-  // TODO: implement "number sign" logic and differentiate variables accordinly
-  // Note: Number Sign is Adobe's terminology, not mine
-  // https://helpx.adobe.com/coldfusion/developing-applications/the-cfml-programming-language/using-expressions-and-number-signs/using-number-signs.html
   test('should identify evaluated variables', () => {
     const tree = parse(`#myVar#`);
     expect(tree[0].type).toBe('variable');

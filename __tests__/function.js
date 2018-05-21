@@ -24,10 +24,10 @@ describe('functions', () => {
   // TODO: is this a requirement that it throw? might just return false, which should be OK
   test.skip('should throw on unmatches hashtags', () => {
     expect(() => {
-      parse(`#myFunc()`)
+      parse(`#myFunc()`);
     }).toThrow();
     expect(() => {
-      parse(`myFunc()#`)
+      parse(`myFunc()#`);
     }).toThrow();
   });
 
@@ -38,21 +38,21 @@ describe('functions', () => {
     expect(tree[0].type).toBe('function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args.length).toBe(0);
-  })
+  });
 
   test('should allow single whitespace before parens', () => {
     const tree = parse(`myFunc ()`);
     expect(tree[0].type).toBe('function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args.length).toBe(0);
-  })
+  });
 
   test('should allow single argument', () => {
     const tree = parse(`myFunc ( test )`);
     expect(tree[0].type).toBe('function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].value.value).toBe('test');
-  })
+  });
 
   test('should allow multiple arguments', () => {
     const tree = parse(`myFunc ( test1, test2 )`);
@@ -60,14 +60,14 @@ describe('functions', () => {
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].value.value).toBe('test1');
     expect(tree[0].args[1].value.value).toBe('test2');
-  })
+  });
 
   test('should allow string as argument', () => {
     const tree = parse(`myFunc("testString")`);
     expect(tree[0].type).toBe('function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].value.value).toBe('testString');
-  })
+  });
 
   test('should allow array as argument', () => {
     const tree = parse(`myFunc([1, 2, 3])`);
@@ -76,7 +76,7 @@ describe('functions', () => {
     expect(tree[0].args[0].value.entries[0].value).toBe('1');
     expect(tree[0].args[0].value.entries[1].value).toBe('2');
     expect(tree[0].args[0].value.entries[2].value).toBe('3');
-  })
+  });
 
   test('should allow struct as argument', () => {
     const tree = parse(`myFunc({test: myTest})`);
@@ -84,7 +84,7 @@ describe('functions', () => {
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].value.entries[0].key.value).toBe('test');
     expect(tree[0].args[0].value.entries[0].value.value).toBe('myTest');
-  })
+  });
 
   test('should allow named arguments', () => {
     const tree = parse(`myFunc(arg1 = "yay", arg2 ="woohoo")`);
@@ -94,7 +94,7 @@ describe('functions', () => {
     expect(tree[0].args[0].value.value).toBe('yay');
     expect(tree[0].args[1].arg.value).toBe('arg2');
     expect(tree[0].args[1].value.value).toBe('woohoo');
-  })
+  });
 
   test('should allow quoted named arguments', () => {
     const tree = parse(`myFunc("arg1"='yay', 'arg2'= "woohoo")`);
@@ -104,5 +104,5 @@ describe('functions', () => {
     expect(tree[0].args[0].value.value).toBe('yay');
     expect(tree[0].args[1].arg.value).toBe('arg2');
     expect(tree[0].args[1].value.value).toBe('woohoo');
-  })
+  });
 });

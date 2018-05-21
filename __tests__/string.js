@@ -25,14 +25,14 @@ describe('string', () => {
 
   test('should allow escaped double quotes in string', () => {
     const tree = parse(`"test\"something\""`);
-    console.log(util.inspect(tree, { depth: null, colors: true }));
+    // console.log(util.inspect(tree, { depth: null, colors: true }));
     expect(tree[0].type).toBe('string');
     expect(tree[0].value).toBe('test"something"');
   });
 
   test('should allow escaped single quotes in string', () => {
     const tree = parse(`'test\'something\''`);
-    console.log(util.inspect(tree, { depth: null, colors: true }));
+    // console.log(util.inspect(tree, { depth: null, colors: true }));
     expect(tree[0].type).toBe('string');
     expect(tree[0].value).toBe("test'something'");
   });

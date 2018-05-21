@@ -52,9 +52,31 @@ describe('attributs', () => {
     expect(tree[0].attributes[2].value).toBe(null);
   });
 
-  test('should allow struct literals as values', () => {});
-  test('should allow array literals as values', () => {});
-  test('should allow number literals as values', () => {});
+  test('should allow struct literals as values', () => {
+    const tree = parse(`<cfdump var = { test: 'testval' } />`);
+    expect(tree[0].type).toBe('tag');
+    expect(tree[0].name).toBe('cfdump');
+    expect(tree[0].attributes[0].attr.value).toBe('var');
+    expect(tree[0].attributes[0].value.entries[0].key.value).toBe('test');
+    expect(tree[0].attributes[0].value.entries[0].value.value).toBe('testval');
+  });
+
+  test('should allow array literals as values', () => {
+    const tree = parse(`<cfdump var = ['one'] />`);
+    expect(tree[0].type).toBe('tag');
+    expect(tree[0].name).toBe('cfdump');
+    expect(tree[0].attributes[0].attr.value).toBe('var');
+    expect(tree[0].attributes[0].value.entries.length).toBe(1);
+    expect(tree[0].attributes[0].value.entries[0].value).toBe('one');
+  });
+
+  test('should allow number literals as values', () => {
+    const tree = parse(`<cfdump var = 0 />`);
+    expect(tree[0].type).toBe('tag');
+    expect(tree[0].name).toBe('cfdump');
+    expect(tree[0].attributes[0].value.value).toBe('0');
+  });
+
   test('should accept deferenced variables as values', () => {
     const tree = parse(`<cfdump var = #myVar# />`);
     expect(tree[0].type).toBe('tag');

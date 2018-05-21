@@ -2,13 +2,16 @@
 
 
 
-// start = (datatype)*
+// start = (expression)*
 start = (scriptContext / tagContext)*
 
 scriptContext = cfscript / scriptComment / script
-tagContext = tag / selfClosedTag / tagComment / datatype
+tagContext = tag / selfClosedTag / tagComment / expression
 
-datatype = string / func / variable / struct / array // number?
+// TODO: should optionally be surrounded in parens, e.g.
+//  realExpress = lp? expression rp?
+// TODO: should include number type?
+expression = string / func / variable / struct / array / ternary
 
 
 // SCRIPT CONTEXT
@@ -24,7 +27,7 @@ script = "//"
 // ================
 
 tag =
-  e:openTag ws* a:( tagContext / datatype / text )* ws* f:closeTag {
+  e:openTag ws* a:( tagContext / expression / text )* ws* f:closeTag {
     if (e.name !== f.name) {
       return false;
     }
@@ -83,7 +86,7 @@ text =
 
 
 attribute =
-  ws+ attr:datatype value:(ws* eq ws* val:datatype {return val;})? { 
+  ws+ attr:expression value:(ws* eq ws* val:expression {return val;})? { 
     return {
       type: 'attribute',
       attr: attr,
@@ -143,7 +146,8 @@ singlequote_character =
 // VARIABLE
 // ===========
 
-// original
+// Note: Number Sign is Adobe's terminology, not mine
+// https://helpx.adobe.com/coldfusion/developing-applications/the-cfml-programming-language/using-expressions-and-number-signs/using-number-signs.html
 variable "variable" =
   h1:hash? value:$([0-9a-zA-Z_\$]+) h2:hash? {
     // unmatched hashtags
@@ -184,9 +188,9 @@ func "function call" =
 
 // ignore commas on either side
 // may include named arguments, may just be a value
-// value can be any valid coldfusion datatype (I think)
+// value can be any valid coldfusion expression (I think)
 argument "argument" = 
-  ws* comma? arg:( a:(variable / string) ws* eq ws* { return a; })? val:datatype comma? { 
+  ws* comma? arg:( a:(variable / string) ws* eq ws* { return a; })? val:expression comma? { 
     return {
       type: 'attribute',
       arg: arg,
@@ -217,7 +221,7 @@ struct "struct literal" =
   }
 
 keyValuePair "key value pair" =
-  key:(variable / string) ws* (eq / colon) ws* value:(datatype) {
+  key:(variable / string) ws* (eq / colon) ws* value:(expression) {
     return {
       type: 'key value pair', // necessary data?
       key: key,
@@ -236,7 +240,7 @@ keyValuePair "key value pair" =
 // ARRAY
 // =========
 array "array literal" =
-  lsb ws* collection:(d:datatype comma? ws* {return d;})* ws* rsb {
+  lsb ws* collection:(d:expression ws* comma? ws* {return d;})* ws* rsb {
     return {
       type: 'array',
       entries: collection
@@ -247,6 +251,21 @@ array "array literal" =
 
 
 
+
+// TERNARY
+// ============
+
+// ternary "ternary" =
+//   condition:(expression ws*)* ws* questionmark ws* ifBlock:expression ws* colon ws* elseBlock:expression {
+//     return {
+//       type: 'ternary',
+//       condition: condition,
+//       ifBlock: ifBlock,
+//       elseBlock: elseBlock
+//     }
+//   }
+
+ternary "ternary" = "ternary?something:somethingelse"
 
 
 
@@ -297,6 +316,7 @@ comma = ","
 doublequote "double quote" = '"'
 singlequote "single quote" = "'"
 hash = "#"
+questionmark = "?"
 
 // brackets
 lp = "(" // left paren

@@ -68,7 +68,7 @@ describe('comments', () => {
   });
 
   // TODO: this should be supported, though currently fails to parse so at least not losing data
-  test.skip('should allow nested comments', () => {
+  test('should allow nested comments', () => {
     const tree = parse(`<!--- <!--- comment in a comment ---> --->`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].content).toBe(' <!--- comment in a comment ---> ');

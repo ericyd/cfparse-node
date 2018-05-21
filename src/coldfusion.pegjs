@@ -17,9 +17,35 @@ expression = string / func / variable / struct / array / ternary
 // SCRIPT CONTEXT
 // ================
 
-cfscript = "//"
-scriptComment = "//"
-script = "//"
+scriptComment = scriptLineComment / scriptBlockComment
+
+doubleslash = "//"
+scriptLineCommentText = $([^\n\r] . )+
+scriptLineComment "script single line comment" = doubleslash t:scriptLineCommentText* {
+  return {
+    type: 'comment',
+    tagContext: false,
+    content: t.join(''),
+    singleLine: location().start.line === location().end.line
+  }
+}
+
+scriptOpenBlockComment = "/*"
+scriptCloseBlockComment = "*/"
+scriptBlockCommentText = $((!scriptOpenBlockComment)(!scriptCloseBlockComment) . )+
+scriptBlockComment "script block comment" = scriptOpenBlockComment t:scriptBlockCommentText* scriptCloseBlockComment {
+  return {
+    type: 'comment',
+    tagContext: false,
+    content: t.join(''),
+    singleLine: location().start.line === location().end.line
+  }
+}
+
+
+
+cfscript = "todo: write rule"
+script = "todo: write rule"
 
 
 

@@ -9,10 +9,11 @@ const util = require('util');
 // to inspect a tree:
 // console.log(util.inspect(tree, {depth: null, colors: true}))
 
-describe('comments', () => {
+describe('tag context comments', () => {
   test('should return a comment', () => {
     const tree = parse(`<!--- test --->`);
     expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(true);
     expect(tree[0].content).toBe(' test ');
     expect(tree[0].singleLine).toBe(true);
   });
@@ -22,6 +23,7 @@ describe('comments', () => {
     test
     --->`);
     expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(true);
     expect(tree[0].content).toContain('test');
     expect(tree[0].singleLine).toBe(false);
   });
@@ -29,6 +31,7 @@ describe('comments', () => {
   test('should allow no whitespace comments', () => {
     const tree = parse(`<!---test--->`);
     expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(true);
     expect(tree[0].content).toBe('test');
     expect(tree[0].singleLine).toBe(true);
   });
@@ -38,6 +41,7 @@ describe('comments', () => {
     Example: <cfset exampleVar = "exampleValue" />
     --->`);
     expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(true);
     expect(tree[0].content).toContain(
       'Example: <cfset exampleVar = "exampleValue" />'
     );
@@ -47,6 +51,7 @@ describe('comments', () => {
   test('should allow empty comments', () => {
     const tree = parse(`<!------>`);
     expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(true);
     expect(tree[0].content).toBe('');
     expect(tree[0].singleLine).toBe(true);
   });
@@ -54,6 +59,7 @@ describe('comments', () => {
   test('should allow empty comments with whitespace', () => {
     const tree = parse(`<!--- 	 --->`);
     expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(true);
     expect(tree[0].content).toBe(' \t ');
     expect(tree[0].singleLine).toBe(true);
   });
@@ -63,6 +69,7 @@ describe('comments', () => {
     sometimes used in heading
     ----------------------------->`);
     expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(true);
     expect(tree[0].content).toContain('sometimes used in heading');
     expect(tree[0].singleLine).toBe(false);
   });
@@ -71,7 +78,18 @@ describe('comments', () => {
   test('should allow nested comments', () => {
     const tree = parse(`<!--- <!--- comment in a comment ---> --->`);
     expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(true);
     expect(tree[0].content).toBe(' <!--- comment in a comment ---> ');
     expect(tree[0].singleLine).toBe(true);
   });
 });
+
+
+describe.only('script context comments', () => {
+  test('should allow script style comments', () => {
+    const tree = parse(`// test`);
+    expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(false);
+    expect(tree[0].content).toBe(" test");
+  })
+})

@@ -21,7 +21,7 @@ scriptContext = cfscript / scriptComment / script
 tagContext = tag / selfClosedTag / tagComment / expression
 
 // TODO: should optionally be surrounded in parens, e.g.
-//  realExpress = lp? expression rp?
+//  realExpress = "("? expression ")"?
 // TODO: should include number type?
 expression = string / func / variable / struct / array / ternary
 
@@ -79,7 +79,7 @@ tag =
   }
 
 selfClosedTag =
-  lab main:variable attributes:attribute* ws ( rab / crab ) {
+  "<" main:variable attributes:attribute* ws ( ">" / "/>" ) {
     return {
       type: 'tag',
       selfClosed: true,
@@ -89,7 +89,7 @@ selfClosedTag =
   }
 
 openTag =
-  lab main:variable attributes:attribute* ws rab {
+  "<" main:variable attributes:attribute* ws ">" {
     return {
       name: main.value,
       attributes: attributes
@@ -97,7 +97,7 @@ openTag =
   }
 
 closeTag =
-  clab main:variable ws rab {
+  "</" main:variable ws ">" {
     return {
       name: main.value,
       attributes: []
@@ -109,7 +109,7 @@ closeTag =
 
 
 text =
-  characters:$((!lab)(!clab) c:any (!rab)(!tagCloseComment))+ {
+  characters:$((!"<")(!"</") c:any (!">")(!tagCloseComment))+ {
     return {
         type: 'text',
         value: characters
@@ -185,7 +185,7 @@ singlequote_character =
 // ===========
 
 // Note: Number Sign is Adobe's terminology, not mine
-// https://helpx.adobe.com/coldfusion/developing-applications/the-cfml-programming-language/using-expressions-and-number-signs/using-number-signs.html
+// https://he"("x.adobe.com/coldfusion/developing-applications/the-cfml-programming-language/using-expressions-and-number-signs/using-number-signs.html
 variable "variable" =
   h1:hash? value:$([0-9a-zA-Z_\$]+) h2:hash? {
     // unmatched hashtags
@@ -209,7 +209,7 @@ variable "variable" =
 
 // TODO: what are valid function characters?
 func "function call" =
-  h1:hash? v:$([a-zA-Z0-9_]+) ws? lp args:argument* ws rp h2:hash? {
+  h1:hash? v:$([a-zA-Z0-9_]+) ws? "(" args:argument* ws ")" h2:hash? {
     // unmatched hashtags
     if (h1 && !h2 || !h1 && h2) {
       return false
@@ -251,7 +251,7 @@ number "number" = [0-9\.]+
 // STRUCT
 // =========
 struct "struct literal" =
-  lcb ws collection:(kvp:keyValuePair ws comma? ws { return kvp; })* ws rcb {
+  "{" ws collection:(kvp:keyValuePair ws comma? ws { return kvp; })* ws "}" {
     return {
       type: 'struct',
       entries: collection
@@ -278,7 +278,7 @@ keyValuePair "key value pair" =
 // ARRAY
 // =========
 // array "array literal" =
-//   lsb ws collection:(d:expression ws comma? ws {return d;})* ws rsb {
+//   "[" ws collection:(d:expression ws comma? ws {return d;})* ws "]" {
 //     return {
 //       type: 'array',
 //       entries: collection
@@ -289,13 +289,13 @@ keyValuePair "key value pair" =
 // from https://github.com/pegjs/pegjs/blob/master/examples/json.pegjs
 // I think this is better for handling optional commas (e.g. after last value)
 array
-  = lsb
+  = "["
     values:(
       head:expression
       tail:(ws comma ws v:expression ws { return v; })*
       { return [head].concat(tail); }
     )?
-    rsb
+    "]"
     { 
       return {
         type: 'array',
@@ -371,18 +371,6 @@ doublequote "double quote" = '"'
 singlequote "single quote" = "'"
 hash = "#"
 questionmark = "?"
-
-// brackets
-lp = "(" // left paren
-rp = ")" // right paren
-lcb = "{" // left curly brace
-rcb = "}" // right curly brace
-lsb = "[" // left square brace
-rsb = "]" // right square brace
-lab = "<" // left angle bracket
-clab = "</" // closing left angle bracket
-rab = ">" // right angle bracket
-crab = "/>" // closing right angle bracket
 
 // most ascii characters except: non-printing chars(x0-x1F), quotation marks (x22), single quotes (x27), backslash (x5C)
 // unescaped = [\x20-\x21\x23-\x26\x28\x5B\x5D-\u10FFFF]

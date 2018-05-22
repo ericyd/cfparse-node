@@ -1,8 +1,20 @@
-// https://medium.com/@daffl/beyond-regex-writing-a-parser-in-javascript-8c9ed10576a6
+// Parsing grammar for ColdFusion language,
+// powered by PEG.js [1]
+//
+// Credit is due to several sources, including:
+// * David Luecke's Medium article [2]
+// * JavaScript example grammar (PEG.js) [3]
+// * JSON example grammar (PEG.js) [4]
+//
+// All three of these have snippets that have been included in this grammar
+// with minor revisions due to syntactic differences or author preferences.
+//
+// [1] https://pegjs.org/
+// [2] https://medium.com/@daffl/beyond-regex-writing-a-parser-in-javascript-8c9ed10576a6
+// [3] https://github.com/pegjs/pegjs/blob/35f3c5267a062646c8f5762af37f31c5443f0696/examples/javascript.pegjs
+// [4] https://github.com/pegjs/pegjs/blob/35f3c5267a062646c8f5762af37f31c5443f0696/examples/json.pegjs
 
 
-
-// start = (expression)*
 start = (scriptContext / tagContext)*
 
 scriptContext = cfscript / scriptComment / script
@@ -53,7 +65,7 @@ script = "todo: write rule"
 // ================
 
 tag =
-  e:openTag ws* a:( tagContext / expression / text )* ws* f:closeTag {
+  e:openTag ws a:( tagContext / expression / text )* ws f:closeTag {
     if (e.name !== f.name) {
       return false;
     }
@@ -67,7 +79,7 @@ tag =
   }
 
 selfClosedTag =
-  lab main:variable attributes:attribute* ws* ( rab / crab ) {
+  lab main:variable attributes:attribute* ws ( rab / crab ) {
     return {
       type: 'tag',
       selfClosed: true,
@@ -77,7 +89,7 @@ selfClosedTag =
   }
 
 openTag =
-  lab main:variable attributes:attribute* ws* rab {
+  lab main:variable attributes:attribute* ws rab {
     return {
       name: main.value,
       attributes: attributes
@@ -85,7 +97,7 @@ openTag =
   }
 
 closeTag =
-  clab main:variable ws* rab {
+  clab main:variable ws rab {
     return {
       name: main.value,
       attributes: []
@@ -112,7 +124,7 @@ text =
 
 
 attribute =
-  ws+ attr:expression value:(ws* eq ws* val:expression {return val;})? { 
+  ws attr:expression value:(ws eq ws val:expression {return val;})? { 
     return {
       type: 'attribute',
       attr: attr,
@@ -197,7 +209,7 @@ variable "variable" =
 
 // TODO: what are valid function characters?
 func "function call" =
-  h1:hash? v:$([a-zA-Z0-9_]+) ws? lp args:argument* ws* rp h2:hash? {
+  h1:hash? v:$([a-zA-Z0-9_]+) ws? lp args:argument* ws rp h2:hash? {
     // unmatched hashtags
     if (h1 && !h2 || !h1 && h2) {
       return false
@@ -216,7 +228,7 @@ func "function call" =
 // may include named arguments, may just be a value
 // value can be any valid coldfusion expression (I think)
 argument "argument" = 
-  ws* comma? arg:( a:(variable / string) ws* eq ws* { return a; })? val:expression comma? { 
+  ws comma? arg:( a:(variable / string) ws eq ws { return a; })? val:expression comma? { 
     return {
       type: 'attribute',
       arg: arg,
@@ -239,7 +251,7 @@ number "number" = [0-9\.]+
 // STRUCT
 // =========
 struct "struct literal" =
-  lcb ws* collection:(kvp:keyValuePair ws* comma? ws* { return kvp; })* ws* rcb {
+  lcb ws collection:(kvp:keyValuePair ws comma? ws { return kvp; })* ws rcb {
     return {
       type: 'struct',
       entries: collection
@@ -247,7 +259,7 @@ struct "struct literal" =
   }
 
 keyValuePair "key value pair" =
-  key:(variable / string) ws* (eq / colon) ws* value:(expression) {
+  key:(variable / string) ws (eq / colon) ws value:(expression) {
     return {
       type: 'key value pair', // necessary data?
       key: key,
@@ -265,15 +277,31 @@ keyValuePair "key value pair" =
 
 // ARRAY
 // =========
-array "array literal" =
-  lsb ws* collection:(d:expression ws* comma? ws* {return d;})* ws* rsb {
-    return {
-      type: 'array',
-      entries: collection
+// array "array literal" =
+//   lsb ws collection:(d:expression ws comma? ws {return d;})* ws rsb {
+//     return {
+//       type: 'array',
+//       entries: collection
+//     }
+//   }
+
+
+// from https://github.com/pegjs/pegjs/blob/master/examples/json.pegjs
+// I think this is better for handling optional commas (e.g. after last value)
+array
+  = lsb
+    values:(
+      head:expression
+      tail:(ws comma ws v:expression ws { return v; })*
+      { return [head].concat(tail); }
+    )?
+    rsb
+    { 
+      return {
+        type: 'array',
+        entries: values !== null ? values : []
+      }
     }
-  }
-
-
 
 
 
@@ -282,7 +310,7 @@ array "array literal" =
 // ============
 
 // ternary "ternary" =
-//   condition:(expression ws*)* ws* questionmark ws* ifBlock:expression ws* colon ws* elseBlock:expression {
+//   condition:(expression ws)* ws questionmark ws ifBlock:expression ws colon ws elseBlock:expression {
 //     return {
 //       type: 'ternary',
 //       condition: condition,
@@ -363,5 +391,5 @@ HEXDIG = [0-9a-f]i
 
 any = .
 
-ws "whitespace" = [ \t\n\r]
+ws "whitespace" = [ \t\n\r]*
 nonws "non whitespace" = [^ \t\n\r]

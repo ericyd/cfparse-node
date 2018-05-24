@@ -488,4 +488,8 @@ arithmeticAssignmentOperator
   / "*="
   / "/="
   / "%="
+  / "&=" // strings, not exactly arithmetic
 
+// string concatenation
+stringOperator
+  = "&"

@@ -428,5 +428,64 @@ ternary "ternary"
 
 
 
+// OPERATORS
+// ===================
+// https://help.adobe.com/en_US/ColdFusion/9.0/Developing/WSc3ff6d0ea77859461172e0811cbec09d55-7ffc.html#WSc3ff6d0ea77859461172e0811cbec09d55-7ffa
+// must account for both cases
 
+decisionOperator
+  = "EQ"                    / "eq"
+  / "IS"                    / "is"
+  / 'EQUAL'                 / 'equal'
+  / "NEQ"                   / "neq"
+  / "IS NOT"                / "is not"
+  / "NOT EQUAL"             / "not equal"
+  / "GT"                    / "gt"
+  / "GREATER THAN"          / "greater than"
+  / "GTE"                   / "gte"
+  / "GE"                    / "ge"
+  / "GREATER THAN OR EQUAL" / "greater than or equal"
+  / "LT"                    / "lt"
+  / "LESS THAN"             / "less than"
+  / "LTE"                   / "lte"
+  / "LE"                    / "le"
+  / "LESS THAN OR EQUAL"    / "less than or equal"
+  / "CONTAINS"              / "contains"
+  / "DOES NOT CONTAIN"      / "does not contain"
+
+booleanOperator
+  = "!"
+  / "&&"
+  / "||"
+  / "NOT" / "not"
+  / "AND" / "and"
+  / "OR"  / "or"
+  / "XOR" / "xor"
+  / "EQV" / "eqv"
+  / "IMP" / "imp"
+
+arithmeticBinaryOperator
+  = "+"
+  / "-"
+  / "*"
+  / "/"
+  / "%"
+  / "\\" // integer division - will this cause issues with escape chars?
+  / "^"
+  / "MOD" / "mod"
+
+// can be prefix or postfix
+arithmeticUnaryOperator
+  = "++"
+  / "--"
+  / "+"
+  / "-"
+
+// TODO: should this just be an `assignmentOperator`
+arithmeticAssignmentOperator
+  = "+="
+  / "-="
+  / "*="
+  / "/="
+  / "%="
 

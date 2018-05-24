@@ -84,12 +84,11 @@ describe('tag context comments', () => {
   });
 });
 
-
 describe.only('script context comments', () => {
   test('should allow script style comments', () => {
     const tree = parse(`// test`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].tagContext).toBe(false);
-    expect(tree[0].content).toBe(" test");
-  })
-})
+    expect(tree[0].content).toBe(' test');
+  });
+});

@@ -25,47 +25,130 @@ tagContext = tag / selfClosedTag / tagComment / expression
 // TODO: should include number type?
 expression = string / func / variable / struct / array / ternary
 
+// BASE UNITS
+// ================
+
+escape_character
+  = "\\"
+
+eq
+  = "="
+
+colon
+  = ":"
+
+comma
+  = ","
+
+doublequote "double quote"
+  = '"'
+
+singlequote "single quote"
+  = "'"
+
+hash
+  = "#"
+
+questionmark
+  = "?"
+
+// most ascii characters except: non-printing chars(x0-x1F), quotation marks (x22), single quotes (x27), backslash (x5C)
+// unescaped = [\x20-\x21\x23-\x26\x28\x5B\x5D-\u10FFFF]
+unescaped
+  = [\x20-\x21\x23-\x5B\x5D-\u10FFFF]
+
+HEXDIG
+  = [0-9a-f]i
+
+any
+  = .
+
+ws "whitespace"
+  = [ \t\n\r]*
+nonws "non whitespace"
+  = [^ \t\n\r]
+
+character
+  = unescaped
+  / escape_sequence
+
+escape_sequence "escape sequence"
+  = escape_character sequence:(
+      doublequote
+    / singlequote
+    / "\\"
+    / "/"
+    / "b" { return "\b"; }
+    / "f" { return "\f"; }
+    / "n" { return "\n"; }
+    / "r" { return "\r"; }
+    / "t" { return "\t"; }
+    / "u" digits:$(HEXDIG HEXDIG HEXDIG HEXDIG) {
+         return String.fromCharCode(parseInt(digits, 16));
+       }
+  ) { return sequence; }
+
+
+
+
 
 // SCRIPT CONTEXT
 // ================
 
-scriptComment = scriptLineComment / scriptBlockComment
+scriptComment
+  = scriptLineComment
+  / scriptBlockComment
 
-doubleslash = "//"
-scriptLineCommentText = $([^\n\r] . )+
-scriptLineComment "script single line comment" = doubleslash t:scriptLineCommentText* {
-  return {
-    type: 'comment',
-    tagContext: false,
-    content: t.join(''),
-    singleLine: location().start.line === location().end.line
+doubleslash
+  = "//"
+
+scriptLineCommentText
+  = $([^\n\r] . )+
+
+scriptLineComment "script single line comment"
+  = doubleslash t:scriptLineCommentText* {
+    return {
+      type: 'comment',
+      tagContext: false,
+      body: t.join(''),
+      singleLine: location().start.line === location().end.line
+    }
   }
-}
 
-scriptOpenBlockComment = "/*"
-scriptCloseBlockComment = "*/"
-scriptBlockCommentText = $((!scriptOpenBlockComment)(!scriptCloseBlockComment) . )+
-scriptBlockComment "script block comment" = scriptOpenBlockComment t:scriptBlockCommentText* scriptCloseBlockComment {
-  return {
-    type: 'comment',
-    tagContext: false,
-    content: t.join(''),
-    singleLine: location().start.line === location().end.line
+scriptOpenBlockComment
+  = "/*"
+
+scriptCloseBlockComment
+  = "*/"
+
+scriptBlockCommentText
+  = $((!scriptOpenBlockComment)(!scriptCloseBlockComment) . )+
+
+scriptBlockComment "script block comment"
+  = scriptOpenBlockComment t:scriptBlockCommentText* scriptCloseBlockComment {
+    return {
+      type: 'comment',
+      tagContext: false,
+      body: t.join(''),
+      singleLine: location().start.line === location().end.line
+    }
   }
-}
 
 
 
-cfscript = "todo: write rule"
-script = "todo: write rule"
+cfscript
+  = "todo: write rule"
+
+script
+  = "todo: write rule"
 
 
 
 // TAG CONTEXT
 // ================
 
-tag =
-  e:openTag ws a:( tagContext / expression / text )* ws f:closeTag {
+tag
+  = e:openTag ws a:( tagContext / expression / text )* ws f:closeTag {
     if (e.name !== f.name) {
       return false;
     }
@@ -74,12 +157,12 @@ tag =
       selfClosed: false,
       name: e.name,
       attributes: e.attributes,
-      content: a
+      body: a
     };
   }
 
-selfClosedTag =
-  "<" main:variable attributes:attribute* ws ( ">" / "/>" ) {
+selfClosedTag
+  = "<" main:variable attributes:attribute* ws ( ">" / "/>" ) {
     return {
       type: 'tag',
       selfClosed: true,
@@ -88,16 +171,16 @@ selfClosedTag =
     }
   }
 
-openTag =
-  "<" main:variable attributes:attribute* ws ">" {
+openTag
+  = "<" main:variable attributes:attribute* ws ">" {
     return {
       name: main.value,
       attributes: attributes
     }
   }
 
-closeTag =
-  "</" main:variable ws ">" {
+closeTag
+  = "</" main:variable ws ">" {
     return {
       name: main.value,
       attributes: []
@@ -108,8 +191,8 @@ closeTag =
 
 
 
-text =
-  characters:$((!"<")(!"</") c:any (!">")(!tagCloseComment))+ {
+text
+  = characters:$((!"<")(!"</") c:any (!">")(!tagCloseComment))+ {
     return {
         type: 'text',
         value: characters
@@ -123,8 +206,8 @@ text =
 
 
 
-attribute =
-  ws attr:expression value:(ws eq ws val:expression {return val;})? { 
+attribute
+  = ws attr:expression value:(ws eq ws val:expression {return val;})? { 
     return {
       type: 'attribute',
       attr: attr,
@@ -138,19 +221,27 @@ attribute =
 // TAG COMMENTS
 //============
 
-tagOpenComment = "<!---"
-tagCloseComment = "--->"
-tagCommentText = $((!tagOpenComment)(!tagCloseComment) . )+
+
+tagOpenComment
+  = "<!---"
+
+tagCloseComment
+  = "--->"
+
+tagCommentText
+  = $((!tagOpenComment)(!tagCloseComment) . )+
+
 // for now, going to skip any whitespace handling with comments,
 // formatting will be preserved exactly as written
-tagComment "tag comment" = tagOpenComment t:tagCommentText* tagCloseComment {
-  return {
-    type: 'comment',
-    tagContext: true,
-    content: t.join(''),
-    singleLine: location().start.line === location().end.line
+tagComment "tag comment"
+  = tagOpenComment t:tagCommentText* tagCloseComment {
+    return {
+      type: 'comment',
+      tagContext: true,
+      body: t.join(''),
+      singleLine: location().start.line === location().end.line
+    }
   }
-}
 
 
 
@@ -163,19 +254,19 @@ the online parser seems to be able to parse strings with escaped quotes.
 But, doing so breaks a few other tests, and still doesn't work with escaped strings in my unit tests.
 So, another approach will need to be investigated
 */
-string "string" =
-  doublequote text:(doublequote_character*) doublequote {
+string "string"
+  = doublequote text:(doublequote_character*) doublequote {
     return { type: 'string', value: text.join('') };
   }
   / singlequote text:(singlequote_character*) singlequote {
     return { type: 'string', value: text.join('') };
   }
 
-doublequote_character =
-  (!doublequote) c:character { return c; }
+doublequote_character
+  = (!doublequote) c:character { return c; }
 
-singlequote_character =
-  (!singlequote) c:character { return c; }
+singlequote_character
+  = (!singlequote) c:character { return c; }
 
 
 
@@ -186,8 +277,8 @@ singlequote_character =
 
 // Note: Number Sign is Adobe's terminology, not mine
 // https://he"("x.adobe.com/coldfusion/developing-applications/the-cfml-programming-language/using-expressions-and-number-signs/using-number-signs.html
-variable "variable" =
-  h1:hash? value:$([0-9a-zA-Z_\$]+) h2:hash? {
+variable "variable"
+  = h1:hash? value:$([0-9a-zA-Z_\$]+) h2:hash? {
     // unmatched hashtags
     if (h1 && !h2 || !h1 && h2) {
       return false
@@ -208,8 +299,8 @@ variable "variable" =
 // ==============
 
 // TODO: what are valid function characters?
-func "function call" =
-  h1:hash? v:$([a-zA-Z0-9_]+) ws? "(" args:argument* ws ")" h2:hash? {
+func "function call"
+  = h1:hash? v:$([a-zA-Z0-9_]+) ws? "(" args:argument* ws ")" h2:hash? {
     // unmatched hashtags
     if (h1 && !h2 || !h1 && h2) {
       return false
@@ -227,8 +318,8 @@ func "function call" =
 // ignore commas on either side
 // may include named arguments, may just be a value
 // value can be any valid coldfusion expression (I think)
-argument "argument" = 
-  ws comma? arg:( a:(variable / string) ws eq ws { return a; })? val:expression comma? { 
+argument "argument"
+  = ws comma? arg:( a:(variable / string) ws eq ws { return a; })? val:expression comma? { 
     return {
       type: 'attribute',
       arg: arg,
@@ -242,7 +333,8 @@ argument "argument" =
 
 // NUMBER
 // ==========
-number "number" = [0-9\.]+
+number "number"
+  = [0-9\.]+
 
 
 
@@ -250,16 +342,18 @@ number "number" = [0-9\.]+
 
 // STRUCT
 // =========
-struct "struct literal" =
-  "{" ws collection:(kvp:keyValuePair ws comma? ws { return kvp; })* ws "}" {
+// ColdFusion does not accept comma after final property assignment
+struct "struct literal"
+  = "{" ws collection:(kvp:keyValuePair ws comma? ws { return kvp; })* ws "}" {
     return {
       type: 'struct',
+      // TODO: rename `entries` => `elements` || `properties`?
       entries: collection
     }
   }
 
-keyValuePair "key value pair" =
-  key:(variable / string) ws (eq / colon) ws value:(expression) {
+keyValuePair "key value pair"
+  = key:(variable / string) ws (eq / colon) ws value:(expression) {
     return {
       type: 'key value pair', // necessary data?
       key: key,
@@ -277,18 +371,10 @@ keyValuePair "key value pair" =
 
 // ARRAY
 // =========
-// array "array literal" =
-//   "[" ws collection:(d:expression ws comma? ws {return d;})* ws "]" {
-//     return {
-//       type: 'array',
-//       entries: collection
-//     }
-//   }
-
-
 // from https://github.com/pegjs/pegjs/blob/master/examples/json.pegjs
 // I think this is better for handling optional commas (e.g. after last value)
-array
+// ColdFusion does not accept comma after final element
+array "array literal"
   = "["
     values:(
       head:expression
@@ -299,6 +385,7 @@ array
     { 
       return {
         type: 'array',
+        // TODO: rename `entries` => `elements`?
         entries: values !== null ? values : []
       }
     }
@@ -319,7 +406,8 @@ array
 //     }
 //   }
 
-ternary "ternary" = "ternary?something:somethingelse"
+ternary "ternary"
+  = "ternary?something:somethingelse"
 
 
 
@@ -336,48 +424,9 @@ ternary "ternary" = "ternary?something:somethingelse"
 //     };
 //   }
 
-character =
-  unescaped / escape_sequence
-
-escape_sequence "escape sequence" = escape_character sequence:(
-     doublequote
-   / singlequote
-   / "\\"
-   / "/"
-   / "b" { return "\b"; }
-   / "f" { return "\f"; }
-   / "n" { return "\n"; }
-   / "r" { return "\r"; }
-   / "t" { return "\t"; }
-   / "u" digits:$(HEXDIG HEXDIG HEXDIG HEXDIG) {
-       return String.fromCharCode(parseInt(digits, 16));
-     }
-  )
-  { return sequence; }
 
 
 
 
 
 
-// PUNCTUATION
-// ==============
-
-escape_character = "\\"
-eq = "="
-colon = ":"
-comma = ","
-doublequote "double quote" = '"'
-singlequote "single quote" = "'"
-hash = "#"
-questionmark = "?"
-
-// most ascii characters except: non-printing chars(x0-x1F), quotation marks (x22), single quotes (x27), backslash (x5C)
-// unescaped = [\x20-\x21\x23-\x26\x28\x5B\x5D-\u10FFFF]
-unescaped = [\x20-\x21\x23-\x5B\x5D-\u10FFFF]
-HEXDIG = [0-9a-f]i
-
-any = .
-
-ws "whitespace" = [ \t\n\r]*
-nonws "non whitespace" = [^ \t\n\r]

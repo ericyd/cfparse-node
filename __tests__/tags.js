@@ -85,7 +85,7 @@ describe('tags', () => {
     const tree = parse(`<cfoutput><cfscript></cfscript></cfoutput>`);
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfoutput');
-    expect(tree[0].content[0].name).toBe('cfscript');
+    expect(tree[0].body[0].name).toBe('cfscript');
   });
 
   test('should identify closed nested tags', () => {
@@ -93,8 +93,8 @@ describe('tags', () => {
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfoutput');
     expect(tree[0].selfClosed).toBe(false);
-    expect(tree[0].content[0].name).toBe('cfset');
-    expect(tree[0].content[0].selfClosed).toBe(true);
+    expect(tree[0].body[0].name).toBe('cfset');
+    expect(tree[0].body[0].selfClosed).toBe(true);
   });
 
   test('should allow angle brackets in props', () => {
@@ -114,9 +114,9 @@ describe('tags', () => {
     expect(tree[0].attributes[0].value).toBe('√↓►;)┴≡±¡╥-╝åD░║«Y╚á');
   });
 
-  // TODO: This returns false, returns a tree != original content
+  // TODO: This returns false, returns a tree != original body
   test.skip('should allow /> in prop', () => {
-    const tree = parse(`<cfdiv prop="/>">content</div>`);
+    const tree = parse(`<cfdiv prop="/>">body</div>`);
     console.log(util.inspect(tree, { depth: null, colors: true }));
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfdiv');
@@ -125,7 +125,7 @@ describe('tags', () => {
   });
 
   test.skip('should allow escaped double quotes in props', () => {
-    const tree = parse(`<cfdiv prop="test\"something\"">content</div>`);
+    const tree = parse(`<cfdiv prop="test\"something\"">body</div>`);
     console.log(util.inspect(tree, { depth: null, colors: true }));
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfdiv');
@@ -134,7 +134,7 @@ describe('tags', () => {
   });
 
   test.skip('should allow escaped single quotes in props', () => {
-    const tree = parse(`<cfdiv prop='test\'something\''>content</div>`);
+    const tree = parse(`<cfdiv prop='test\'something\''>body</div>`);
     console.log(util.inspect(tree, { depth: null, colors: true }));
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfdiv');

@@ -399,19 +399,25 @@ number "number"
 // =========
 // ColdFusion does not accept comma after final property assignment
 struct "struct literal"
-  // = "{" ws "}" { return { type: "struct", properties: [] }; }
   = "{" ws properties:propertyNameAndValueList? ws "}" {
-       return { type: "struct", properties: optionalList(properties) };
-     }
+      return {
+        type: "struct",
+        properties: optionalList(properties)
+      };
+    }
 
 propertyNameAndValueList
-  = head:propertyAssignment tail:(ws "," ws prop:propertyAssignment {return prop;})* {
+  = head:propertyAssignment tail:(ws "," ws p:propertyAssignment {return p;})* {
       return buildList(head, tail);
     }
 
 propertyAssignment
   = key:(variable / string) ws (eq / colon) ws value:expression {
-      return { type: "structProperty", key: key, value: value };
+      return {
+        type: "structProperty",
+        key: key,
+        value: value
+      };
     }
 
 
@@ -427,17 +433,17 @@ propertyAssignment
 // I think this is better for handling optional commas (e.g. after last value)
 // ColdFusion does not accept comma after final element
 array "array literal"
-  = "["
+  = "[" ws
     values:(
       head:expression
-      tail:(ws comma ws v:expression ws { return v; })*
-      { return [head].concat(tail); }
+      tail:(ws comma ws e:expression ws { return e; })*
+      { return buildList(head, tail); }
     )?
-    "]"
+    ws "]"
     { 
       return {
         type: 'array',
-        elements: values !== null ? values : []
+        elements: optionalList(values)
       }
     }
 

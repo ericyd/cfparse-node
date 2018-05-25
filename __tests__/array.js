@@ -66,4 +66,13 @@ describe('array', () => {
     expect(tree[0].type).toBe('array');
     expect(tree[0].elements[0].type).toBe('ternary');
   });
+
+  test('should allow empty array', () => {
+    let tree = parse(`[]`);
+    expect(tree[0].type).toBe('array');
+    expect(tree[0].elements.length).toBe(0);
+    tree = parse(`[    ]`);
+    expect(tree[0].type).toBe('array');
+    expect(tree[0].elements.length).toBe(0);
+  });
 });

@@ -17,11 +17,6 @@
 
 
 {
-  // function filledArray(count, value) {
-  //   return Array.apply(null, new Array(count))
-  //     .map(function() { return value; });
-  // }
-
   // function extractOptional(optional, index) {
   //   return optional ? optional[index] : null;
   // }

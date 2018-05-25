@@ -73,7 +73,7 @@ tagContext = tag / selfClosedTag / tagComment / expression
 // TODO: should optionally be surrounded in parens, e.g.
 //  realExpress = "("? expression ")"?
 // TODO: should include number type?
-expression = string / func / variable / struct / array / ternary
+expression = string / func / variable / struct / array / /*binaryExpression /*/ ternary
 
 // BASE UNITS
 // ================
@@ -521,8 +521,31 @@ ternary "ternary"
 
 
 
+// BINARY EXPRESSION
+// ===================
 
+// TODO figure out how to do this in a way that PEGjs doesn't mind
+// it complains about the possible infinite recursion, my guess is because it starts with an expression which could be itself
+// but... that's true - the first part of the expression could be anything
+// maybe need more subdivisions to be more explicit with which kind of operators
+// can act on which kinds of expressions?
+binaryExpression
+  = left:expression ws operator:binaryOperator ws right:expression {
+    return {
+      type: "binaryExpression",
+      operator: operator,
+      left: left,
+      right: right
+    };
+  }
 
+binaryOperator
+  = decisionOperator
+  / eq
+  / booleanOperator
+  / arithmeticBinaryOperator
+  / arithmeticAssignmentOperator
+  / stringOperator
 
 
 // OPERATORS

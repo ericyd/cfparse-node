@@ -353,9 +353,13 @@ variable "variable"
 // FUNCTION CALL
 // ==============
 
+// TODO: there should be a separate datatype for values wrapped in ##
+// similar to how an expression wrapped in () is identical to one without (), except the wrapper
+// it should be abstracted because it is write optional
+
 // TODO: what are valid function characters?
 func "function call"
-  = h1:hash? v:$([a-zA-Z0-9_]+) ws? "(" args:argument* ws ")" h2:hash? {
+  = h1:hash? v:$([a-zA-Z0-9_]+) ws "(" ws args:argumentList ws ")" h2:hash? {
     // unmatched hashtags
     if (h1 && !h2 || !h1 && h2) {
       return false
@@ -368,13 +372,18 @@ func "function call"
     }
   }
 
+argumentList
+  = args:(
+      head:argument
+      tail:(ws comma ws a:argument ws { return a; })*
+      { return buildList(head, tail); }
+    )? { return optionalList(args); }
 
 
-// ignore commas on either side
 // may include named arguments, may just be a value
 // value can be any valid coldfusion expression (I think)
 argument "argument"
-  = ws comma? arg:( a:(variable / string) ws eq ws { return a; })? val:expression comma? { 
+  = ws arg:( a:(variable / string) ws eq ws { return a; })? val:expression { 
     return {
       type: 'attribute',
       arg: arg,
@@ -400,25 +409,25 @@ number "number"
 // ColdFusion does not accept comma after final property assignment
 struct "struct literal"
   = "{" ws properties:propertyNameAndValueList? ws "}" {
-      return {
-        type: "struct",
-        properties: optionalList(properties)
-      };
-    }
+    return {
+      type: "struct",
+      properties: optionalList(properties)
+    };
+  }
 
 propertyNameAndValueList
   = head:propertyAssignment tail:(ws "," ws p:propertyAssignment {return p;})* {
-      return buildList(head, tail);
-    }
+    return buildList(head, tail);
+  }
 
 propertyAssignment
   = key:(variable / string) ws (eq / colon) ws value:expression {
-      return {
-        type: "structProperty",
-        key: key,
-        value: value
-      };
-    }
+    return {
+      type: "structProperty",
+      key: key,
+      value: value
+    };
+  }
 
 
 
@@ -439,8 +448,7 @@ array "array literal"
       tail:(ws comma ws e:expression ws { return e; })*
       { return buildList(head, tail); }
     )?
-    ws "]"
-    { 
+    ws "]" { 
       return {
         type: 'array',
         elements: optionalList(values)

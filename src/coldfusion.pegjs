@@ -15,6 +15,61 @@
 // [4] https://github.com/pegjs/pegjs/blob/35f3c5267a062646c8f5762af37f31c5443f0696/examples/json.pegjs
 
 
+
+{
+  // function filledArray(count, value) {
+  //   return Array.apply(null, new Array(count))
+  //     .map(function() { return value; });
+  // }
+
+  // function extractOptional(optional, index) {
+  //   return optional ? optional[index] : null;
+  // }
+
+  // function extractList(list, index) {
+  //   return list.map(function(element) { return element[index]; });
+  // }
+
+  // this was from javascript.pegjs
+  // personally I think it's easier to explicitly return the item you want
+  // in the property definition
+  // this is used to match things like (ws "," ws something) and extract the "something"
+  // I prefer to write (ws "," ws s:something {return s;})
+  // function buildList(head, tail, index) {
+  //   return [head].concat(extractList(tail, index));
+  // }
+
+  function buildList(head, tail) {
+    return [head].concat(tail);
+  }
+
+  // function buildBinaryExpression(head, tail) {
+  //   return tail.reduce(function(result, element) {
+  //     return {
+  //       type: "BinaryExpression",
+  //       operator: element[1],
+  //       left: result,
+  //       right: element[3]
+  //     };
+  //   }, head);
+  // }
+
+  // function buildLogicalExpression(head, tail) {
+  //   return tail.reduce(function(result, element) {
+  //     return {
+  //       type: "LogicalExpression",
+  //       operator: element[1],
+  //       left: result,
+  //       right: element[3]
+  //     };
+  //   }, head);
+  // }
+
+  function optionalList(value) {
+    return value !== null ? value : [];
+  }
+}
+
 start = (scriptContext / tagContext)*
 
 scriptContext = cfscript / scriptComment / script
@@ -344,23 +399,20 @@ number "number"
 // =========
 // ColdFusion does not accept comma after final property assignment
 struct "struct literal"
-  = "{" ws collection:(kvp:keyValuePair ws comma? ws { return kvp; })* ws "}" {
-    return {
-      type: 'struct',
-      // TODO: rename `entries` => `elements` || `properties`?
-      entries: collection
-    }
-  }
+  // = "{" ws "}" { return { type: "struct", properties: [] }; }
+  = "{" ws properties:propertyNameAndValueList? ws "}" {
+       return { type: "struct", properties: optionalList(properties) };
+     }
 
-keyValuePair "key value pair"
-  = key:(variable / string) ws (eq / colon) ws value:(expression) {
-    return {
-      type: 'key value pair', // necessary data?
-      key: key,
-      value: value
+propertyNameAndValueList
+  = head:propertyAssignment tail:(ws "," ws prop:propertyAssignment {return prop;})* {
+      return buildList(head, tail);
     }
-  }
 
+propertyAssignment
+  = key:(variable / string) ws (eq / colon) ws value:expression {
+      return { type: "structProperty", key: key, value: value };
+    }
 
 
 
@@ -385,8 +437,7 @@ array "array literal"
     { 
       return {
         type: 'array',
-        // TODO: rename `entries` => `elements`?
-        entries: values !== null ? values : []
+        elements: values !== null ? values : []
       }
     }
 
@@ -428,10 +479,47 @@ ternary "ternary"
 
 
 
+// MEMBER
+// ===================
+
+// from javascript.pegjs
+// MemberExpression
+//   = head:(
+//         PrimaryExpression
+//       / FunctionExpression
+//       / NewToken __ callee:MemberExpression __ args:Arguments {
+//           return { type: "NewExpression", callee: callee, arguments: args };
+//         }
+//     )
+//     tail:(
+//         __ "[" __ property:Expression __ "]" {
+//           return { property: property, computed: true };
+//         }
+//       / __ "." __ property:IdentifierName {
+//           return { property: property, computed: false };
+//         }
+//     )*
+//     {
+//       return tail.reduce(function(result, element) {
+//         return {
+//           type: "MemberExpression",
+//           object: result,
+//           property: element.property,
+//           computed: element.computed
+//         };
+//       }, head);
+//     }
+
+
+
+
+
+
+
 // OPERATORS
 // ===================
 // https://help.adobe.com/en_US/ColdFusion/9.0/Developing/WSc3ff6d0ea77859461172e0811cbec09d55-7ffc.html#WSc3ff6d0ea77859461172e0811cbec09d55-7ffa
-// must account for both cases
+// must account for both uppercase and lowercase
 
 decisionOperator
   = "EQ"                    / "eq"

@@ -331,7 +331,7 @@ singlequote_character
 // ===========
 
 // Note: Number Sign is Adobe's terminology, not mine
-// https://he"("x.adobe.com/coldfusion/developing-applications/the-cfml-programming-language/using-expressions-and-number-signs/using-number-signs.html
+// https://helpx.adobe.com/coldfusion/developing-applications/the-cfml-programming-language/using-expressions-and-number-signs/using-number-signs.html
 variable "variable"
   = h1:hash? value:$([0-9a-zA-Z_\$]+) h2:hash? {
     // unmatched hashtags

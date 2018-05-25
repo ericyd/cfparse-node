@@ -57,8 +57,8 @@ describe('attributs', () => {
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfdump');
     expect(tree[0].attributes[0].attr.value).toBe('var');
-    expect(tree[0].attributes[0].value.entries[0].key.value).toBe('test');
-    expect(tree[0].attributes[0].value.entries[0].value.value).toBe('testval');
+    expect(tree[0].attributes[0].value.properties[0].key.value).toBe('test');
+    expect(tree[0].attributes[0].value.properties[0].value.value).toBe('testval');
   });
 
   test('should allow array literals as values', () => {
@@ -66,8 +66,8 @@ describe('attributs', () => {
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfdump');
     expect(tree[0].attributes[0].attr.value).toBe('var');
-    expect(tree[0].attributes[0].value.entries.length).toBe(1);
-    expect(tree[0].attributes[0].value.entries[0].value).toBe('one');
+    expect(tree[0].attributes[0].value.elements.length).toBe(1);
+    expect(tree[0].attributes[0].value.elements[0].value).toBe('one');
   });
 
   test('should allow number literals as values', () => {

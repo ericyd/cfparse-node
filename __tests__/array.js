@@ -24,7 +24,7 @@ describe('array', () => {
   test('should allow mixed types', () => {
     const tree = parse(`[one, 'two', three(), {four: 4}, [5, 5, 5]]`);
     expect(tree[0].type).toBe('array');
-    expect(tree[0].elements[0].type).toBe('variable');
+    expect(tree[0].elements[0].type).toBe('identifier');
     expect(tree[0].elements[0].value).toBe('one');
     expect(tree[0].elements[1].type).toBe('string');
     expect(tree[0].elements[1].value).toBe('two');

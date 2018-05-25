@@ -73,7 +73,7 @@ tagContext = tag / selfClosedTag / tagComment / expression
 // TODO: should optionally be surrounded in parens, e.g.
 //  realExpress = "("? expression ")"?
 // TODO: should include number type?
-expression = string / func / variable / struct / array / /*binaryExpression /*/ ternary
+expression = string / func / memberExpression / identifier / struct / array / /*binaryExpression /*/ ternary
 
 // BASE UNITS
 // ================
@@ -212,7 +212,7 @@ tag
   }
 
 selfClosedTag
-  = "<" main:variable attributes:attribute* ws ( ">" / "/>" ) {
+  = "<" main:identifier attributes:attribute* ws ( ">" / "/>" ) {
     return {
       type: 'tag',
       selfClosed: true,
@@ -222,7 +222,7 @@ selfClosedTag
   }
 
 openTag
-  = "<" main:variable attributes:attribute* ws ">" {
+  = "<" main:identifier attributes:attribute* ws ">" {
     return {
       name: main.value,
       attributes: attributes
@@ -230,7 +230,7 @@ openTag
   }
 
 closeTag
-  = "</" main:variable ws ">" {
+  = "</" main:identifier ws ">" {
     return {
       name: main.value,
       attributes: []
@@ -322,19 +322,22 @@ singlequote_character
 
 
 
-// VARIABLE
+// identifier
 // ===========
 
 // Note: Number Sign is Adobe's terminology, not mine
 // https://helpx.adobe.com/coldfusion/developing-applications/the-cfml-programming-language/using-expressions-and-number-signs/using-number-signs.html
-variable "variable"
+// TODO: there should be a separate datatype for values wrapped in ##
+// similar to how an expression wrapped in () is identical to one without (), except the wrapper
+// it should be abstracted because it is write optional
+identifier "identifier"
   = h1:hash? value:$([0-9a-zA-Z_\$]+) h2:hash? {
     // unmatched hashtags
     if (h1 && !h2 || !h1 && h2) {
       return false
     }
     return {
-      type: 'variable',
+      type: 'identifier',
       value: value,
       useNumberSign: !!(h1 && h2)
     }
@@ -347,10 +350,6 @@ variable "variable"
 
 // FUNCTION CALL
 // ==============
-
-// TODO: there should be a separate datatype for values wrapped in ##
-// similar to how an expression wrapped in () is identical to one without (), except the wrapper
-// it should be abstracted because it is write optional
 
 // TODO: what are valid function characters?
 func "function call"
@@ -378,7 +377,7 @@ argumentList
 // may include named arguments, may just be a value
 // value can be any valid coldfusion expression (I think)
 argument "argument"
-  = ws arg:( a:(variable / string) ws eq ws { return a; })? val:expression { 
+  = ws arg:( a:(identifier / string) ws eq ws { return a; })? val:expression { 
     return {
       type: 'attribute',
       arg: arg,
@@ -416,7 +415,7 @@ propertyNameAndValueList
   }
 
 propertyAssignment
-  = key:(variable / string) ws (eq / colon) ws value:expression {
+  = key:(identifier / string) ws (eq / colon) ws value:expression {
     return {
       type: "structProperty",
       key: key,
@@ -477,7 +476,7 @@ ternary "ternary"
 // argument = path
 // 
 // path =
-//   first:variable rest:("." s:variable { return s; })* {
+//   first:identifier rest:("." s:identifier { return s; })* {
 //     return {
 //       type: 'path',
 //       value: [first].concat(rest)
@@ -491,33 +490,29 @@ ternary "ternary"
 // MEMBER
 // ===================
 
-// from javascript.pegjs
-// MemberExpression
-//   = head:(
-//         PrimaryExpression
-//       / FunctionExpression
-//       / NewToken __ callee:MemberExpression __ args:Arguments {
-//           return { type: "NewExpression", callee: callee, arguments: args };
-//         }
-//     )
-//     tail:(
-//         __ "[" __ property:Expression __ "]" {
-//           return { property: property, computed: true };
-//         }
-//       / __ "." __ property:IdentifierName {
-//           return { property: property, computed: false };
-//         }
-//     )*
-//     {
-//       return tail.reduce(function(result, element) {
-//         return {
-//           type: "MemberExpression",
-//           object: result,
-//           property: element.property,
-//           computed: element.computed
-//         };
-//       }, head);
-//     }
+// modified from javascript.pegjs
+// TODO: update "head" to be more broad.
+// could be function call, struct, array... anything that could have a property or method on it after evaluation
+// if issues, refer to original implementation - a lot was stripped for this version
+memberExpression
+  = head:identifier 
+    tail:(
+        ws "[" ws property:expression ws "]" {
+          return { property: property };
+        }
+      / ws "." ws property:expression {
+          return { property: property };
+        }
+    )*
+    {
+      return tail.reduce(function(result, element) {
+        return {
+          type: "memberExpression",
+          object: result,
+          property: element.property
+        };
+      }, head);
+    }
 
 
 

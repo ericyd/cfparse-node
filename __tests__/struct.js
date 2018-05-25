@@ -58,11 +58,11 @@ describe('struct', () => {
     expect(tree[0].properties[1].value.value).toBe('value2');
   });
 
-  test('should allow variables as value', () => {
+  test('should allow identifiers as value', () => {
     const tree = parse(`{test: testing}`);
     expect(tree[0].type).toBe('struct');
     expect(tree[0].properties[0].key.value).toBe('test');
-    expect(tree[0].properties[0].value.type).toBe('variable');
+    expect(tree[0].properties[0].value.type).toBe('identifier');
     expect(tree[0].properties[0].value.value).toBe('testing');
   });
 

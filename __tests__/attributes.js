@@ -58,7 +58,9 @@ describe('attributs', () => {
     expect(tree[0].name).toBe('cfdump');
     expect(tree[0].attributes[0].attr.value).toBe('var');
     expect(tree[0].attributes[0].value.properties[0].key.value).toBe('test');
-    expect(tree[0].attributes[0].value.properties[0].value.value).toBe('testval');
+    expect(tree[0].attributes[0].value.properties[0].value.value).toBe(
+      'testval'
+    );
   });
 
   test('should allow array literals as values', () => {
@@ -77,7 +79,7 @@ describe('attributs', () => {
     expect(tree[0].attributes[0].value.value).toBe('0');
   });
 
-  test('should accept deferenced variables as values', () => {
+  test('should accept deferenced identifiers as values', () => {
     const tree = parse(`<cfdump var = #myVar# />`);
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfdump');

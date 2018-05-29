@@ -11,7 +11,7 @@
     "prettier:config": "prettier --write --single-quote",
     "prettier": "npm run prettier:config -- \"{,!(node_modules),./**/}*.{js,ts,css,scss}\" \"tsconfig.json\" ",
     "fmt": "npm run prettier",
-    "build-parser": "pegjs -o src/parser.js grammar/coldfusion.pegjs"
+    "build-parser": "pegjs -o src/parser-built.js src/coldfusion.pegjs"
   },
   "repository": {
     "type": "git",

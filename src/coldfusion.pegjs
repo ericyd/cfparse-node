@@ -8,6 +8,7 @@
 //
 // All three of these have snippets that have been included in this grammar
 // with minor revisions due to syntactic differences or author preferences.
+// The JavaScript example grammar in particular was critical to the success of this grammar.
 //
 // [1] https://pegjs.org/
 // [2] https://medium.com/@daffl/beyond-regex-writing-a-parser-in-javascript-8c9ed10576a6
@@ -71,7 +72,7 @@ start
   }
 
 sourceElements
-  = head:sourceElement tail:(ws sourceElement)* {
+  = head:sourceElement tail:(ws se:sourceElement {return se;})* {
     return buildList(head, tail);
   }
 
@@ -88,7 +89,7 @@ tagContext = tag / expression
 // TODO: should optionally be surrounded in parens, e.g.
 //  realExpress = "("? expression ")"?
 // TODO: should include number type?
-expression = string / func / memberExpression / identifier / struct / array / /*binaryExpression /*/ ternary
+expression = string / func / functionExpression / memberExpression / identifier / struct / array / /*binaryExpression /*/ ternary
 
 // BASE UNITS
 // ===================
@@ -352,8 +353,122 @@ identifier "identifier"
 
 
 
-// FUNCTION CALL
+// FUNCTIONS
 // ===================
+returnType
+  = "any"
+  / "array"
+  / "binary"
+  / "boolean"
+  / "date"
+  / "guid"
+  / "numeric"
+  / "query"
+  / "string"
+  / "struct"
+  / "UUID"
+  / "variablename"
+  / "void"
+  / "xml"
+  / identifier
+
+accessType
+  = "private"
+  / "package"
+  / "public"
+  / "remote"
+
+// TODO: accessType and returnType are throwing tons of wrenches in the works...
+functionDeclaration
+  = "function" ws id:identifier ws
+     "(" ws params:functionParameterList? ws ")" ws
+    attrs:functionAttributeList? ws
+    "{" ws body:functionBody ws "}"
+    {
+      return {
+        type: "functionDeclaration",
+        name: id,
+        params: optionalList(params),
+        body: body,
+        // accessType: kws[0],
+        // returnType: kws[1],
+        attributes: optionalList(attrs)
+      };
+    }
+
+functionDeclaration2
+  = a:accessType? ws r:returnType? ws "function" ws id:identifier ws
+    "(" ws params:functionParameterList? ws ")" ws
+    attrs:functionAttributeList? ws
+    "{" ws body:functionBody ws "}"
+    {
+      return {
+        type: "functionDeclaration",
+        name: id,
+        params: optionalList(params),
+        body: body,
+        accessType: a,
+        returnType: r,
+        attributes: optionalList(attrs)
+      };
+    }
+
+functionExpression
+  = a:accessType? ws r:returnType? ws "function" ws id:identifier? ws
+    "(" ws params:functionParameterList? ws ")" ws
+    attrs:functionAttributeList? ws
+    "{" ws body:functionBody ws "}"
+    {
+      return {
+        type: "functionExpression",
+        name: id,
+        params: optionalList(params),
+        body: body,
+        accessType: a,
+        returnType: r,
+        attributes: optionalList(attrs)
+      };
+    }
+
+functionAttributeList
+  = head:functionAttribute tail:(ws fa:functionAttribute { return fa; })* {
+      return buildList(head, tail);
+    }
+
+functionAttribute
+  = attr:identifier ws eq ws val:string {
+    return {
+      type: 'attribute',
+      attr: attr,
+      value: val
+    };
+  }
+
+functionParameterList
+  = head:functionParameter tail:(ws "," ws fp:functionParameter { return fp; })* {
+    return buildList(head, tail);
+  }
+
+functionParameter
+  = req:("required")? ws type:returnType? ws name:identifier defaultVal:(ws eq ws e:expression { return e; })? {
+    return {
+      type: 'parameter',
+      required: !!(req),
+      dataType: type,
+      name: name,
+      default: defaultVal
+    }
+  }
+
+functionBody
+  = body:sourceElements? {
+    return {
+      type: "BlockStatement",
+      body: optionalList(body)
+    };
+  }
+
+
 
 // TODO: what are valid function characters?
 func "function call"
@@ -619,4 +734,6 @@ stringOperator
 // STATEMENT
 // ===================
 statement
-  = expression
+  = functionDeclaration
+  / functionExpression
+  / expression

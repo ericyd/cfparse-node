@@ -1,6 +1,6 @@
 /*
 Comments can exist anywhere and should be treated as pre-formatted text.
-No modifications to the contents or formatting of the comment
+No modifications to the bodys or formatting of the comment
 */
 
 const parse = require('../src/parser');
@@ -14,7 +14,7 @@ describe('tag context comments', () => {
     const tree = parse(`<!--- test --->`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].tagContext).toBe(true);
-    expect(tree[0].content).toBe(' test ');
+    expect(tree[0].body).toBe(' test ');
     expect(tree[0].singleLine).toBe(true);
   });
 
@@ -24,7 +24,7 @@ describe('tag context comments', () => {
     --->`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].tagContext).toBe(true);
-    expect(tree[0].content).toContain('test');
+    expect(tree[0].body).toContain('test');
     expect(tree[0].singleLine).toBe(false);
   });
 
@@ -32,7 +32,7 @@ describe('tag context comments', () => {
     const tree = parse(`<!---test--->`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].tagContext).toBe(true);
-    expect(tree[0].content).toBe('test');
+    expect(tree[0].body).toBe('test');
     expect(tree[0].singleLine).toBe(true);
   });
 
@@ -42,7 +42,7 @@ describe('tag context comments', () => {
     --->`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].tagContext).toBe(true);
-    expect(tree[0].content).toContain(
+    expect(tree[0].body).toContain(
       'Example: <cfset exampleVar = "exampleValue" />'
     );
     expect(tree[0].singleLine).toBe(false);
@@ -52,7 +52,7 @@ describe('tag context comments', () => {
     const tree = parse(`<!------>`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].tagContext).toBe(true);
-    expect(tree[0].content).toBe('');
+    expect(tree[0].body).toBe('');
     expect(tree[0].singleLine).toBe(true);
   });
 
@@ -60,7 +60,7 @@ describe('tag context comments', () => {
     const tree = parse(`<!--- 	 --->`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].tagContext).toBe(true);
-    expect(tree[0].content).toBe(' \t ');
+    expect(tree[0].body).toBe(' \t ');
     expect(tree[0].singleLine).toBe(true);
   });
 
@@ -70,25 +70,70 @@ describe('tag context comments', () => {
     ----------------------------->`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].tagContext).toBe(true);
-    expect(tree[0].content).toContain('sometimes used in heading');
+    expect(tree[0].body).toContain('sometimes used in heading');
     expect(tree[0].singleLine).toBe(false);
   });
 
-  // TODO: this should be supported, though currently fails to parse so at least not losing data
-  test('should allow nested comments', () => {
-    const tree = parse(`<!--- <!--- comment in a comment ---> --->`);
-    expect(tree[0].type).toBe('comment');
-    expect(tree[0].tagContext).toBe(true);
-    expect(tree[0].content).toBe(' <!--- comment in a comment ---> ');
-    expect(tree[0].singleLine).toBe(true);
+  test('should throw on nested comments', () => {
+    expect(() => {
+      parse(`<!--- <!--- comment in a comment ---> --->`);
+    }).toThrow();
   });
 });
 
-describe.only('script context comments', () => {
-  test('should allow script style comments', () => {
+describe('script context comments', () => {
+  test('should allow script style line comments', () => {
     const tree = parse(`// test`);
     expect(tree[0].type).toBe('comment');
     expect(tree[0].tagContext).toBe(false);
-    expect(tree[0].content).toBe(' test');
+    expect(tree[0].body).toBe(' test');
+  });
+
+  test('should line comments should end at line break', () => {
+    const tree = parse(`// test
+    more content`);
+    expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(false);
+    expect(tree[0].body).toBe(' test');
+  });
+
+  test('should allow no characters in body', () => {
+    const tree = parse(`//`);
+    expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(false);
+    expect(tree[0].body).toBe('');
+  });
+
+  test('should allow script style block comments', () => {
+    const tree = parse(`/* testing */`);
+    expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(false);
+    expect(tree[0].body).toBe(' testing ');
+  });
+
+  test('should allow empty script style block comments', () => {
+    const tree = parse(`/* */`);
+    expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(false);
+    expect(tree[0].body).toBe(' ');
+  });
+
+  test('should allow arbitrary whitespace in script style block comments', () => {
+    const tree = parse(`/* 
+    * test1
+    * test2
+    */`);
+    expect(tree[0].type).toBe('comment');
+    expect(tree[0].tagContext).toBe(false);
+    expect(tree[0].body).toBe(` 
+    * test1
+    * test2
+    `);
+  });
+
+  test('should throw on nested comments', () => {
+    expect(() => {
+      parse(`/* /* test */ */`);
+    }).toThrow();
   });
 });

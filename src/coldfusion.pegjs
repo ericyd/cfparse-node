@@ -78,6 +78,8 @@ sourceElements
 
 sourceElement
   = comment
+  / functionDeclaration
+  / functionExpression
   / tag
   / statement
 
@@ -85,6 +87,12 @@ sourceElement
 
 scriptContext = cfscript / expression
 tagContext = tag / expression
+
+
+// STATEMENT
+// ===================
+statement
+  = expression
 
 // TODO: should optionally be surrounded in parens, e.g.
 //  realExpress = "("? expression ")"?
@@ -169,7 +177,7 @@ tagComment "tag comment"
     return {
       type: 'comment',
       tagContext: true,
-      body: t.join(''),
+      body: t,
       singleLine: location().start.line === location().end.line
     }
   }
@@ -182,20 +190,20 @@ scriptLineComment "script single line comment"
     return {
       type: 'comment',
       tagContext: false,
-      body: t.join(''),
+      body: t,
       singleLine: location().start.line === location().end.line
     }
   }
 
 scriptLineCommentText
-  = $([^\n\r] . )*
+  = $(!("\n" / "\r") . )*
 
 scriptBlockComment "script block comment"
   = "/*" t:scriptBlockCommentText "*/" {
     return {
       type: 'comment',
       tagContext: false,
-      body: t.join(''),
+      body: t,
       singleLine: location().start.line === location().end.line
     }
   }
@@ -730,10 +738,3 @@ stringOperator
 
 
 
-
-// STATEMENT
-// ===================
-statement
-  = functionDeclaration
-  / functionExpression
-  / expression

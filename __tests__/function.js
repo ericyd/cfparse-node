@@ -176,8 +176,8 @@ describe('function declarations and expressions', () => {
     expect(tree[0].type).toBe('functionDeclaration');
     expect(tree[0].params.length).toBe(1);
     expect(tree[0].params[0].required).toBe(true);
-    expect(tree[0].params[0].dataType).toBe("numeric");
-    expect(tree[0].params[0].name.value).toBe("param1");
+    expect(tree[0].params[0].dataType).toBe('numeric');
+    expect(tree[0].params[0].name.value).toBe('param1');
   });
 
   test('should allow multiple params', () => {
@@ -191,7 +191,7 @@ describe('function declarations and expressions', () => {
   test('should allow default values for params', () => {
     const tree = parse(`function test(required numeric param1 = 3) {}`);
     expect(tree[0].type).toBe('functionDeclaration');
-    expect(tree[0].params[0].default.value).toBe("3");
+    expect(tree[0].params[0].default.value).toBe('3');
   });
 
   test('should allow any expression as default values for params', () => {
@@ -221,7 +221,7 @@ describe('function declarations and expressions', () => {
   test('should allow omitted identifier', () => {
     const tree = parse(`function (required numeric param1 = 3) {}`);
     expect(tree[0].type).toBe('functionExpression');
-    expect(tree[0].params[0].name).toBe("param1");
+    expect(tree[0].params[0].name).toBe('param1');
   });
 
   test('should allow arbitrary whitespace identifier', () => {
@@ -235,7 +235,7 @@ describe('function declarations and expressions', () => {
    {
 
   }`);
-  expect(tree[0].type).toBe('functionDeclaration');
-  expect(tree[0].params[1].name).toBe("param2");
+    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].params[1].name).toBe('param2');
   });
 });

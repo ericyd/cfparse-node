@@ -114,12 +114,6 @@ colon
 comma
   = ","
 
-doublequote "double quote"
-  = '"'
-
-singlequote "single quote"
-  = "'"
-
 hash
   = "#"
 
@@ -129,7 +123,7 @@ questionmark
 // most ascii characters except: non-printing chars(x0-x1F), quotation marks (x22), single quotes (x27), backslash (x5C)
 // unescaped = [\x20-\x21\x23-\x26\x28\x5B\x5D-\u10FFFF]
 unescaped
-  = [\x20-\x21\x23-\x5B\x5D-\u10FFFF]
+  = [\x20-\x21\x23-\x5B\x5D-\uDFFF]
 
 HEXDIG
   = [0-9a-f]i
@@ -148,8 +142,8 @@ character
 
 escape_sequence "escape sequence"
   = escape_character sequence:(
-      doublequote
-    / singlequote
+      '"'
+    / "'"
     / "\\"
     / "/"
     / "b" { return "\b"; }
@@ -311,25 +305,19 @@ attribute
 
 // STRINGS
 // ===================
-/*
-If you change `doublequote_character` and `singlequote_character` to `character`,
-the online parser seems to be able to parse strings with escaped quotes.
-But, doing so breaks a few other tests, and still doesn't work with escaped strings in my unit tests.
-So, another approach will need to be investigated
-*/
 string "string"
-  = doublequote text:(doublequote_character*) doublequote {
-    return { type: 'string', value: text.join('') };
+  = '"' text:$(doublequote_character)* '"' {
+    return { type: 'string', value: text };
   }
-  / singlequote text:(singlequote_character*) singlequote {
-    return { type: 'string', value: text.join('') };
+  / "'" text:$(singlequote_character)* "'" {
+    return { type: 'string', value: text };
   }
 
 doublequote_character
-  = (!doublequote) c:character { return c; }
+  = (!'"') c:character { return c; }
 
 singlequote_character
-  = (!singlequote) c:character { return c; }
+  = (!"'") c:character { return c; }
 
 
 

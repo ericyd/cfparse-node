@@ -65,10 +65,25 @@
   }
 }
 
-start = (scriptContext / tagContext)*
+start
+  = ws body:sourceElements? ws {
+    return optionalList(body);
+  }
 
-scriptContext = cfscript / scriptComment / script
-tagContext = tag / selfClosedTag / tagComment / expression
+sourceElements
+  = head:sourceElement tail:(ws sourceElement)* {
+    return buildList(head, tail);
+  }
+
+sourceElement
+  = comment
+  / tag
+  / statement
+
+
+
+scriptContext = cfscript / expression
+tagContext = tag / expression
 
 // TODO: should optionally be surrounded in parens, e.g.
 //  realExpress = "("? expression ")"?
@@ -76,7 +91,7 @@ tagContext = tag / selfClosedTag / tagComment / expression
 expression = string / func / memberExpression / identifier / struct / array / /*binaryExpression /*/ ternary
 
 // BASE UNITS
-// ================
+// ===================
 
 escape_character
   = "\\"
@@ -141,22 +156,28 @@ escape_sequence "escape sequence"
 
 
 
-
-// SCRIPT CONTEXT
-// ================
-
-scriptComment
-  = scriptLineComment
+// COMMENTS
+// ===================
+comment
+  = tagComment
+  / scriptLineComment
   / scriptBlockComment
 
-doubleslash
-  = "//"
+tagComment "tag comment"
+  = "<!---" t:tagCommentText "--->" {
+    return {
+      type: 'comment',
+      tagContext: true,
+      body: t.join(''),
+      singleLine: location().start.line === location().end.line
+    }
+  }
 
-scriptLineCommentText
-  = $([^\n\r] . )+
+tagCommentText
+  = $(!("<!---" / "--->") . )*
 
 scriptLineComment "script single line comment"
-  = doubleslash t:scriptLineCommentText* {
+  = "//" t:scriptLineCommentText {
     return {
       type: 'comment',
       tagContext: false,
@@ -165,17 +186,11 @@ scriptLineComment "script single line comment"
     }
   }
 
-scriptOpenBlockComment
-  = "/*"
-
-scriptCloseBlockComment
-  = "*/"
-
-scriptBlockCommentText
-  = $((!scriptOpenBlockComment)(!scriptCloseBlockComment) . )+
+scriptLineCommentText
+  = $([^\n\r] . )*
 
 scriptBlockComment "script block comment"
-  = scriptOpenBlockComment t:scriptBlockCommentText* scriptCloseBlockComment {
+  = "/*" t:scriptBlockCommentText "*/" {
     return {
       type: 'comment',
       tagContext: false,
@@ -183,39 +198,52 @@ scriptBlockComment "script block comment"
       singleLine: location().start.line === location().end.line
     }
   }
+
+scriptBlockCommentText
+  = $(!("/*" / "*/") . )*
+
+
+
+
+
+
+// SCRIPT CONTEXT
+// ===================
 
 
 
 cfscript
   = "todo: write rule"
 
-script
-  = "todo: write rule"
-
 
 
 // TAG CONTEXT
-// ================
+// ===================
 
 tag
+  = matchedTag
+  / unmatchedTag
+
+
+matchedTag
   = e:openTag ws a:( tagContext / expression / text )* ws f:closeTag {
     if (e.name !== f.name) {
       return false;
     }
     return {
       type: 'tag',
-      selfClosed: false,
+      matched: true,
       name: e.name,
       attributes: e.attributes,
       body: a
     };
   }
 
-selfClosedTag
+unmatchedTag
   = "<" main:identifier attributes:attribute* ws ( ">" / "/>" ) {
     return {
       type: 'tag',
-      selfClosed: true,
+      matched: false,
       name: main.value,
       attributes: attributes
     }
@@ -242,7 +270,7 @@ closeTag
 
 
 text
-  = characters:$((!"<")(!"</") c:any (!">")(!tagCloseComment))+ {
+  = characters:$(!("<" / "</") c:any !(">" / "--->"))+ {
     return {
         type: 'text',
         value: characters
@@ -268,36 +296,12 @@ attribute
 
 
 
-// TAG COMMENTS
-//============
-
-
-tagOpenComment
-  = "<!---"
-
-tagCloseComment
-  = "--->"
-
-tagCommentText
-  = $((!tagOpenComment)(!tagCloseComment) . )+
-
-// for now, going to skip any whitespace handling with comments,
-// formatting will be preserved exactly as written
-tagComment "tag comment"
-  = tagOpenComment t:tagCommentText* tagCloseComment {
-    return {
-      type: 'comment',
-      tagContext: true,
-      body: t.join(''),
-      singleLine: location().start.line === location().end.line
-    }
-  }
 
 
 
 
 // STRINGS
-// ============
+// ===================
 /*
 If you change `doublequote_character` and `singlequote_character` to `character`,
 the online parser seems to be able to parse strings with escaped quotes.
@@ -323,7 +327,7 @@ singlequote_character
 
 
 // identifier
-// ===========
+// ===================
 
 // Note: Number Sign is Adobe's terminology, not mine
 // https://helpx.adobe.com/coldfusion/developing-applications/the-cfml-programming-language/using-expressions-and-number-signs/using-number-signs.html
@@ -349,7 +353,7 @@ identifier "identifier"
 
 
 // FUNCTION CALL
-// ==============
+// ===================
 
 // TODO: what are valid function characters?
 func "function call"
@@ -390,7 +394,7 @@ argument "argument"
 
 
 // NUMBER
-// ==========
+// ===================
 number "number"
   = [0-9\.]+
 
@@ -399,7 +403,7 @@ number "number"
 
 
 // STRUCT
-// =========
+// ===================
 // ColdFusion does not accept comma after final property assignment
 struct "struct literal"
   = "{" ws properties:propertyNameAndValueList? ws "}" {
@@ -431,7 +435,7 @@ propertyAssignment
 
 
 // ARRAY
-// =========
+// ===================
 // from https://github.com/pegjs/pegjs/blob/master/examples/json.pegjs
 // I think this is better for handling optional commas (e.g. after last value)
 // ColdFusion does not accept comma after final element
@@ -453,7 +457,7 @@ array "array literal"
 
 
 // TERNARY
-// ============
+// ===================
 
 // ternary "ternary" =
 //   condition:(expression ws)* ws questionmark ws ifBlock:expression ws colon ws elseBlock:expression {
@@ -608,3 +612,11 @@ arithmeticAssignmentOperator
 // string concatenation
 stringOperator
   = "&"
+
+
+
+
+// STATEMENT
+// ===================
+statement
+  = expression

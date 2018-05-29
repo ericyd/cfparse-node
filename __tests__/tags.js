@@ -70,14 +70,14 @@ describe('tags', () => {
   test('should identify closed nodes without closing slash', () => {
     const tree = parse(`<cfoutput>`);
     expect(tree[0].type).toBe('tag');
-    expect(tree[0].selfClosed).toBe(true);
+    expect(tree[0].matched).toBe(false);
     expect(tree[0].name).toBe('cfoutput');
   });
 
   test('should identify closed nodes with closing slash', () => {
     const tree = parse(`<cfset i = "test" />`);
     expect(tree[0].type).toBe('tag');
-    expect(tree[0].selfClosed).toBe(true);
+    expect(tree[0].matched).toBe(false);
     expect(tree[0].name).toBe('cfset');
   });
 
@@ -92,9 +92,9 @@ describe('tags', () => {
     const tree = parse(`<cfoutput><cfset var="value" /></cfoutput>`);
     expect(tree[0].type).toBe('tag');
     expect(tree[0].name).toBe('cfoutput');
-    expect(tree[0].selfClosed).toBe(false);
+    expect(tree[0].matched).toBe(true);
     expect(tree[0].body[0].name).toBe('cfset');
-    expect(tree[0].body[0].selfClosed).toBe(true);
+    expect(tree[0].body[0].matched).toBe(false);
   });
 
   test('should allow angle brackets in props', () => {

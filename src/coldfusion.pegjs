@@ -427,8 +427,17 @@ functionParameterList
     return buildList(head, tail);
   }
 
+// TODO: there should be a more elegant way to match the optional returnType --
+// since it can be an identifer, it is matching when only one identifier found, instead of the `name`
 functionParameter
-  = req:("required")? ws type:dataType? ws name:identifier defaultVal:(ws eq ws e:expression { return e; })? {
+  = req:"required"? ws type:dataType? ws name:identifier? defaultVal:(ws eq ws e:expression { return e; })?
+    // fail the match if type and name are both null
+    !{ return (!type && !name) }
+    {
+    if (type && !name) {
+        name = type;
+        type = null;
+    }
     return {
       type: 'parameter',
       required: !!(req),

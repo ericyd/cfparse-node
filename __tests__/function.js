@@ -218,6 +218,12 @@ describe('function declarations and expressions', () => {
     }).toThrow();
   });
 
+  test('should not allow param to be named a reserved keyword', () => {
+    expect(() => {
+      parse(`function test(test, required) {}`);
+    }).toThrow();
+  });
+
   test('should allow omitted identifier', () => {
     const tree = parse(`function (required numeric param1 = 3) {}`);
     expect(tree[0].type).toBe('functionExpression');

@@ -365,7 +365,7 @@ dataType
   / "variablename"
   / "void"
   / "xml"
-  / identifier
+  / $(!"function" identifier)
 
 accessType
   = "private"
@@ -373,26 +373,8 @@ accessType
   / "public"
   / "remote"
 
-// TODO: accessType and returnType are throwing tons of wrenches in the works...
-// functionDeclaration
-//   = "function" ws id:identifier ws
-//      "(" ws params:functionParameterList? ws ")" ws
-//     attrs:functionAttributeList? ws
-//     "{" ws body:functionBody ws "}"
-//     {
-//       return {
-//         type: "functionDeclaration",
-//         name: id,
-//         params: optionalList(params),
-//         body: body,
-//         // accessType: kws[0],
-//         // returnType: kws[1],
-//         attributes: optionalList(attrs)
-//       };
-//     }
-
 functionDeclaration
-  = a:accessType? ws r:dataType? ws "function" ws id:identifier? ws
+  = a:accessType? ws r:dataType? ws "function" ws id:$identifier? ws
     "(" ws params:functionParameterList? ws ")" ws
     attrs:functionAttributeList? ws
     "{" ws body:functionBody ws "}"
@@ -430,7 +412,7 @@ functionParameterList
 // TODO: there should be a more elegant way to match the optional returnType --
 // since it can be an identifer, it is matching when only one identifier found, instead of the `name`
 functionParameter
-  = req:"required"? ws type:dataType? ws name:identifier? defaultVal:(ws eq ws e:expression { return e; })?
+  = req:"required"? ws type:dataType? ws name:$identifier? defaultVal:(ws eq ws e:expression { return e; })?
     // fail the match if type and name are both null
     !{ return (!type && !name) }
     {

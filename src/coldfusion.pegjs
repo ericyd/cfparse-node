@@ -79,7 +79,6 @@ sourceElements
 sourceElement
   = comment
   / functionDeclaration
-  / functionExpression
   / tag
   / statement
 
@@ -97,7 +96,7 @@ statement
 // TODO: should optionally be surrounded in parens, e.g.
 //  realExpress = "("? expression ")"?
 // TODO: should include number type?
-expression = string / func / functionExpression / memberExpression / identifier / struct / array / /*binaryExpression /*/ ternary
+expression = string / func / memberExpression / identifier / struct / array / /*binaryExpression /*/ ternary
 
 // BASE UNITS
 // ===================
@@ -351,7 +350,7 @@ identifier "identifier"
 
 // FUNCTIONS
 // ===================
-returnType
+dataType
   = "any"
   / "array"
   / "binary"
@@ -375,48 +374,31 @@ accessType
   / "remote"
 
 // TODO: accessType and returnType are throwing tons of wrenches in the works...
+// functionDeclaration
+//   = "function" ws id:identifier ws
+//      "(" ws params:functionParameterList? ws ")" ws
+//     attrs:functionAttributeList? ws
+//     "{" ws body:functionBody ws "}"
+//     {
+//       return {
+//         type: "functionDeclaration",
+//         name: id,
+//         params: optionalList(params),
+//         body: body,
+//         // accessType: kws[0],
+//         // returnType: kws[1],
+//         attributes: optionalList(attrs)
+//       };
+//     }
+
 functionDeclaration
-  = "function" ws id:identifier ws
-     "(" ws params:functionParameterList? ws ")" ws
-    attrs:functionAttributeList? ws
-    "{" ws body:functionBody ws "}"
-    {
-      return {
-        type: "functionDeclaration",
-        name: id,
-        params: optionalList(params),
-        body: body,
-        // accessType: kws[0],
-        // returnType: kws[1],
-        attributes: optionalList(attrs)
-      };
-    }
-
-functionDeclaration2
-  = a:accessType? ws r:returnType? ws "function" ws id:identifier ws
+  = a:accessType? ws r:dataType? ws "function" ws id:identifier? ws
     "(" ws params:functionParameterList? ws ")" ws
     attrs:functionAttributeList? ws
     "{" ws body:functionBody ws "}"
     {
       return {
         type: "functionDeclaration",
-        name: id,
-        params: optionalList(params),
-        body: body,
-        accessType: a,
-        returnType: r,
-        attributes: optionalList(attrs)
-      };
-    }
-
-functionExpression
-  = a:accessType? ws r:returnType? ws "function" ws id:identifier? ws
-    "(" ws params:functionParameterList? ws ")" ws
-    attrs:functionAttributeList? ws
-    "{" ws body:functionBody ws "}"
-    {
-      return {
-        type: "functionExpression",
         name: id,
         params: optionalList(params),
         body: body,
@@ -446,7 +428,7 @@ functionParameterList
   }
 
 functionParameter
-  = req:("required")? ws type:returnType? ws name:identifier defaultVal:(ws eq ws e:expression { return e; })? {
+  = req:("required")? ws type:dataType? ws name:identifier defaultVal:(ws eq ws e:expression { return e; })? {
     return {
       type: 'parameter',
       required: !!(req),

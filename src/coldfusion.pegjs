@@ -17,6 +17,12 @@
 
 
 
+// TODO: will need to address precedence
+// I imagine this will add a lot of the bulk I was hoping to avoid
+// but it does seem potentially impossible to parse accurately
+// without addressing operator precedence
+// see: https://github.com/babel/babel/blob/master/packages/babel-parser/src/parser/expression.js#L5-L7
+
 {
   // function extractOptional(optional, index) {
   //   return optional ? optional[index] : null;
@@ -416,18 +422,18 @@ functionParameter
     // fail the match if type and name are both null
     !{ return (!type && !name) }
     {
-    if (type && !name) {
-        name = type;
-        type = null;
+      if (type && !name) {
+          name = type;
+          type = null;
+      }
+      return {
+        type: 'parameter',
+        required: !!(req),
+        dataType: type,
+        name: name,
+        default: defaultVal
+      }
     }
-    return {
-      type: 'parameter',
-      required: !!(req),
-      dataType: type,
-      name: name,
-      default: defaultVal
-    }
-  }
 
 functionBody
   = body:sourceElements? {
@@ -581,15 +587,15 @@ ternary "ternary"
 // modified from javascript.pegjs
 // TODO: update "head" to be more broad.
 // could be function call, struct, array... anything that could have a property or method on it after evaluation
-// if issues, refer to original implementation - a lot was stripped for this version
+// but, cannot just be "expression" else it is recursive error
 memberExpression
-  = head:identifier 
+  = head:identifier
     tail:(
         ws "[" ws property:expression ws "]" {
-          return { property: property };
+          return { property: property, computed: true };
         }
       / ws "." ws property:expression {
-          return { property: property };
+          return { property: property, computed: false };
         }
     )*
     {
@@ -597,7 +603,8 @@ memberExpression
         return {
           type: "memberExpression",
           object: result,
-          property: element.property
+          property: element.property,
+          computed: element.computed
         };
       }, head);
     }

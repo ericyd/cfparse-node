@@ -254,7 +254,7 @@ describe('function declarations and expressions', () => {
 
   }`);
     expect(tree[0].type).toBe('functionDeclaration');
-    expect(tree[0].name).toBe('id');
+    expect(tree[0].name).toBe('test');
     expect(tree[0].params[0].name).toBe('param1');
     expect(tree[0].params[1].name).toBe('param2');
   });

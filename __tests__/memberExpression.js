@@ -11,6 +11,7 @@ describe('member expressions', () => {
     expect(tree[0].object.type).toBe('identifier');
     expect(tree[0].object.value).toBe('cfc');
     expect(tree[0].property.value).toBe('property');
+    expect(tree[0].computed).toBe(false);
   });
 
   test('should identify bracket operator', () => {
@@ -19,6 +20,7 @@ describe('member expressions', () => {
     expect(tree[0].object.type).toBe('identifier');
     expect(tree[0].object.value).toBe('cfc');
     expect(tree[0].property.value).toBe('property');
+    expect(tree[0].computed).toBe(true);
   });
 
   test('should allow strings in bracket notation', () => {
@@ -27,6 +29,7 @@ describe('member expressions', () => {
     expect(tree[0].object.type).toBe('identifier');
     expect(tree[0].object.value).toBe('cfc');
     expect(tree[0].property.value).toBe('property');
+    expect(tree[0].computed).toBe(true);
   });
 
   test('should allow function calls in bracket notation', () => {
@@ -36,6 +39,7 @@ describe('member expressions', () => {
     expect(tree[0].object.value).toBe('cfc');
     expect(tree[0].property.type).toBe('function');
     expect(tree[0].property.name).toBe('method');
+    expect(tree[0].computed).toBe(true);
   });
 
   test('should allow arbitrary whitespace in bracket notation', () => {
@@ -46,6 +50,7 @@ describe('member expressions', () => {
     expect(tree[0].object.type).toBe('identifier');
     expect(tree[0].object.value).toBe('cfc');
     expect(tree[0].property.value).toBe('property');
+    expect(tree[0].computed).toBe(true);
   });
 
   test('should allow arbitrary whitespace in dot notation', () => {
@@ -65,6 +70,7 @@ describe('member expressions', () => {
     expect(tree[0].object.value).toBe('cfc');
     expect(tree[0].property.type).toBe('function');
     expect(tree[0].property.name).toBe('method');
+    expect(tree[0].computed).toBe(false);
   });
 
   test('should allow function calls as object', () => {
@@ -74,5 +80,17 @@ describe('member expressions', () => {
     expect(tree[0].object.name).toBe('generator');
     expect(tree[0].property.type).toBe('function');
     expect(tree[0].property.name).toBe('method');
+  });
+
+  test('should allow member expressions as object', () => {
+    const tree = parse(`cfc["property"].method()`);
+    expect(tree[0].type).toBe('memberExpression');
+    expect(tree[0].object.type).toBe('memberExpression');
+    expect(tree[0].object.object.value).toBe('cfc');
+    expect(tree[0].object.property.value).toBe('property');
+    expect(tree[0].object.computed).toBe(true);
+    expect(tree[0].property.type).toBe('function');
+    expect(tree[0].property.name).toBe('method');
+    expect(tree[0].computed).toBe(false);
   });
 });

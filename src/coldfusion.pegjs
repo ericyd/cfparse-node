@@ -103,9 +103,9 @@ SourceElements
 
 sourceElement
   = Comment
-  / FunctionDeclaration
   / Tag
   / Statement
+  / FunctionDeclaration
 
 
 
@@ -473,7 +473,7 @@ TagComment "Tag Comment"
   = "<!---" t:TagCommentText "--->" {
     return {
       type: 'Comment',
-      TagContext: true,
+      tagContext: true,
       body: t,
       singleLine: location().start.line === location().end.line
     }
@@ -486,7 +486,7 @@ ScriptLineComment "script single line Comment"
   = "//" t:ScriptLineCommentText {
     return {
       type: 'Comment',
-      TagContext: false,
+      tagContext: false,
       body: t,
       singleLine: location().start.line === location().end.line
     }
@@ -499,7 +499,7 @@ ScriptBlockComment "script block Comment"
   = "/*" t:ScriptBlockCommentText "*/" {
     return {
       type: 'Comment',
-      TagContext: false,
+      tagContext: false,
       body: t,
       singleLine: location().start.line === location().end.line
     }

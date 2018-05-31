@@ -89,9 +89,9 @@ describe('script context comments', () => {
     expect(tree[0].body).toBe(' test');
   });
 
-  test('should line comments should end at line break', () => {
+  test('line comments should end at line break', () => {
     const tree = parse(`// test
-    more content`);
+    callMe();`);
     expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(false);
     expect(tree[0].body).toBe(' test');

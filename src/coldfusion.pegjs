@@ -641,9 +641,9 @@ DataType
   / "guid"i
   / "numeric"i
   / "query"i
-  / "String"i
-  / "Struct"i
-  / "UUID"i
+  / "string"i
+  / "struct"i
+  / "uuid"i
   / "variablename"i
   / "void"i
   / "xml"i

@@ -6,35 +6,35 @@ const util = require('util');
 
 describe('Struct', () => {
   test('should allow non-quoted keys', () => {
-    const tree = parse(`{ key : "value" }`);
+    const tree = parse(`{ key : "value" };`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('key');
     expect(tree[0].properties[0].value.value).toBe('value');
   });
 
   test('should allow quoted keys', () => {
-    const tree = parse(`{ "key" : "value" }`);
+    const tree = parse(`{ "key" : "value" };`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('key');
     expect(tree[0].properties[0].value.value).toBe('value');
   });
 
   test('should allow `=` as key/value delimiter', () => {
-    const tree = parse(`{ "key" = "value" }`);
+    const tree = parse(`{ "key" = "value" };`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('key');
     expect(tree[0].properties[0].value.value).toBe('value');
   });
 
   test('should allow `:` as key/value delimiter', () => {
-    const tree = parse(`{test: "test"}`);
+    const tree = parse(`{test: "test"};`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('test');
     expect(tree[0].properties[0].value.value).toBe('test');
   });
 
   test('should capture multiple comma-delimited key/value pairs', () => {
-    const tree = parse(`{key1: "value1" , key2: "value2"}`);
+    const tree = parse(`{key1: "value1" , key2: "value2"};`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('key1');
     expect(tree[0].properties[0].value.value).toBe('value1');
@@ -50,7 +50,7 @@ describe('Struct', () => {
          key2					:
       					 
          "value2"
-      }`);
+      };`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('key1');
     expect(tree[0].properties[0].value.value).toBe('value1');
@@ -59,7 +59,7 @@ describe('Struct', () => {
   });
 
   test('should allow identifiers as value', () => {
-    const tree = parse(`{test: testing}`);
+    const tree = parse(`{test: testing};`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('test');
     expect(tree[0].properties[0].value.type).toBe('Identifier');
@@ -67,7 +67,7 @@ describe('Struct', () => {
   });
 
   test('should allow functions as value', () => {
-    const tree = parse(`{test: testing()}`);
+    const tree = parse(`{test: testing()};`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('test');
     expect(tree[0].properties[0].value.type).toBe('Function');
@@ -79,7 +79,7 @@ describe('Struct', () => {
       test: {
         id: 1
       }
-    }`);
+    };`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('test');
     expect(tree[0].properties[0].value.type).toBe('Struct');
@@ -87,7 +87,7 @@ describe('Struct', () => {
   });
 
   test('should allow arrays as value', () => {
-    const tree = parse(`{test: [1, 2, 3] }`);
+    const tree = parse(`{test: [1, 2, 3] };`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties[0].key.value).toBe('test');
     expect(tree[0].properties[0].value.type).toBe('Array');
@@ -96,31 +96,31 @@ describe('Struct', () => {
 
   test('should not allow functions as keys', () => {
     expect(() => {
-      parse(`{testing() : test}`);
+      parse(`{testing() : test};`);
     }).toThrow();
   });
 
   test('should not allow struct as keys', () => {
     expect(() => {
-      parse(`{ {test: test} : test}`);
+      parse(`{ {test: test} : test};`);
     }).toThrow();
   });
 
   test('should not allow array as keys', () => {
     expect(() => {
-      parse(`{ [1,2,3] : test}`);
+      parse(`{ [1,2,3] : test};`);
     }).toThrow();
   });
 
   test('should not allow tags as keys', () => {
     expect(() => {
-      parse(`{ <cfset i = 0 /> : test}`);
+      parse(`{ <cfset i = 0 /> : test};`);
     }).toThrow();
   });
 
   test('should not allow keys without values', () => {
     expect(() => {
-      parse(`{ test }`);
+      parse(`{ test };`);
     }).toThrow();
   });
 
@@ -128,27 +128,27 @@ describe('Struct', () => {
     // TODO: this passes because commas are optional in the parsing grammar.
     // need to determine if there is a way to only make them optional for the final pair
     expect(() => {
-      parse(`{ test: testing code: coding }`);
+      parse(`{ test: testing code: coding };`);
     }).toThrow();
   });
 
   test('should not allow alternative delimiters', () => {
     expect(() => {
-      parse(`{ test: testing ; code: coding }`);
+      parse(`{ test: testing ; code: coding };`);
     }).toThrow();
     expect(() => {
-      parse(`{ test: testing | code: coding }`);
+      parse(`{ test: testing | code: coding };`);
     }).toThrow();
   });
 
   test('should not allow comma after last key/value pair', () => {
     expect(() => {
-      parse(`{test: "test" , }`);
+      parse(`{test: "test" , };`);
     }).toThrow();
   });
 
   test('should allow empty struct literals', () => {
-    const tree = parse(`{}`);
+    const tree = parse(`{};`);
     expect(tree[0].type).toBe('Struct');
     expect(tree[0].properties.length).toBe(0);
     const tree2 = parse(`{   }`);

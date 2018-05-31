@@ -6,7 +6,7 @@ const util = require('util');
 
 describe('member expressions', () => {
   test('should identify dot operator', () => {
-    const tree = parse(`cfc.property`);
+    const tree = parse(`cfc.property;`);
     expect(tree[0].type).toBe('MemberExpression');
     expect(tree[0].object.type).toBe('Identifier');
     expect(tree[0].object.value).toBe('cfc');
@@ -15,7 +15,7 @@ describe('member expressions', () => {
   });
 
   test('should identify bracket operator', () => {
-    const tree = parse(`cfc[property]`);
+    const tree = parse(`cfc[property];`);
     expect(tree[0].type).toBe('MemberExpression');
     expect(tree[0].object.type).toBe('Identifier');
     expect(tree[0].object.value).toBe('cfc');
@@ -24,7 +24,7 @@ describe('member expressions', () => {
   });
 
   test('should allow strings in bracket notation', () => {
-    const tree = parse(`cfc["property"]`);
+    const tree = parse(`cfc["property"];`);
     expect(tree[0].type).toBe('MemberExpression');
     expect(tree[0].object.type).toBe('Identifier');
     expect(tree[0].object.value).toBe('cfc');
@@ -33,7 +33,7 @@ describe('member expressions', () => {
   });
 
   test('should allow function calls in bracket notation', () => {
-    const tree = parse(`cfc[method()]`);
+    const tree = parse(`cfc[method()];`);
     expect(tree[0].type).toBe('MemberExpression');
     expect(tree[0].object.type).toBe('Identifier');
     expect(tree[0].object.value).toBe('cfc');
@@ -45,7 +45,7 @@ describe('member expressions', () => {
   test('should allow arbitrary whitespace in bracket notation', () => {
     const tree = parse(`cfc 
     	[ property	
-		 ]`);
+		 ];`);
     expect(tree[0].type).toBe('MemberExpression');
     expect(tree[0].object.type).toBe('Identifier');
     expect(tree[0].object.value).toBe('cfc');
@@ -56,7 +56,7 @@ describe('member expressions', () => {
   test('should allow arbitrary whitespace in dot notation', () => {
     const tree = parse(`cfc 
 		. 
-    	property`);
+    	property;`);
     expect(tree[0].type).toBe('MemberExpression');
     expect(tree[0].object.type).toBe('Identifier');
     expect(tree[0].object.value).toBe('cfc');
@@ -64,7 +64,7 @@ describe('member expressions', () => {
   });
 
   test('should allow function calls in bracket notation', () => {
-    const tree = parse(`cfc.method()`);
+    const tree = parse(`cfc.method();`);
     expect(tree[0].type).toBe('MemberExpression');
     expect(tree[0].object.type).toBe('Identifier');
     expect(tree[0].object.value).toBe('cfc');
@@ -74,7 +74,7 @@ describe('member expressions', () => {
   });
 
   test('should allow function calls as object', () => {
-    const tree = parse(`generator().method()`);
+    const tree = parse(`generator().method();`);
     expect(tree[0].type).toBe('MemberExpression');
     expect(tree[0].object.type).toBe('Function');
     expect(tree[0].object.name).toBe('generator');
@@ -83,7 +83,7 @@ describe('member expressions', () => {
   });
 
   test('should allow member expressions as object', () => {
-    const tree = parse(`cfc["property"].method()`);
+    const tree = parse(`cfc["property"].method();`);
     expect(tree[0].type).toBe('MemberExpression');
     expect(tree[0].object.type).toBe('MemberExpression');
     expect(tree[0].object.object.value).toBe('cfc');

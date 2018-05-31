@@ -6,7 +6,7 @@ const util = require('util');
 
 describe('Array', () => {
   test('should return an array', () => {
-    const tree = parse(`['one', 'two', 'three']`);
+    const tree = parse(`['one', 'two', 'three'];`);
     expect(tree[0].type).toBe('Array');
   });
 
@@ -15,14 +15,14 @@ describe('Array', () => {
       'one'  			,
          'two',
       'three'
-    ]`);
+    ];`);
     expect(tree[0].type).toBe('Array');
     expect(tree[0].elements.length).toBe(3);
     expect(tree[0].elements[0].value).toBe('one');
   });
 
   test('should allow mixed types', () => {
-    const tree = parse(`[one, 'two', three(), {four: 4}, [5, 5, 5]]`);
+    const tree = parse(`[one, 'two', three(), {four: 4}, [5, 5, 5]];`);
     expect(tree[0].type).toBe('Array');
     expect(tree[0].elements[0].type).toBe('Identifier');
     expect(tree[0].elements[0].value).toBe('one');
@@ -38,40 +38,40 @@ describe('Array', () => {
 
   test('should throw on non-comma delimiters', () => {
     expect(() => {
-      parse(`['one'| 'two']`);
+      parse(`['one'| 'two'];`);
     }).toThrow();
   });
 
   // this, like the struct, might be ok? It feels risky to assume, but in essence maybe this would catch typos?
   test('should throw on multiple elements without delimiters', () => {
     expect(() => {
-      parse(`['one' 'two']`);
+      parse(`['one' 'two'];`);
     }).toThrow();
   });
 
   test('should throw with unacceptable chars', () => {
     expect(() => {
-      parse(`[=<]`);
+      parse(`[=<];`);
     }).toThrow();
   });
 
   test('should throw with tags', () => {
     expect(() => {
-      parse(`[<cfset i = 0 />]`);
+      parse(`[<cfset i = 0 />];`);
     }).toThrow();
   });
 
   test('should allow ternary operators', () => {
-    const tree = parse(`[true ? 'woo' : 'boo']`);
+    const tree = parse(`[true ? 'woo' : 'boo'];`);
     expect(tree[0].type).toBe('Array');
     expect(tree[0].elements[0].type).toBe('Ternary');
   });
 
   test('should allow empty array', () => {
-    let tree = parse(`[]`);
+    let tree = parse(`[];`);
     expect(tree[0].type).toBe('Array');
     expect(tree[0].elements.length).toBe(0);
-    tree = parse(`[    ]`);
+    tree = parse(`[    ];`);
     expect(tree[0].type).toBe('Array');
     expect(tree[0].elements.length).toBe(0);
   });

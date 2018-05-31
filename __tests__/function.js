@@ -7,7 +7,7 @@ const util = require('util');
 describe('call expressions', () => {
   test('should identify evaluated functions', () => {
     const tree = parse(`#myFunc()#`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args.length).toBe(0);
     expect(tree[0].useNumberSign).toBe(true);
@@ -15,7 +15,7 @@ describe('call expressions', () => {
 
   test('should identify non-evaluated functions', () => {
     const tree = parse(`myFunc()`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args.length).toBe(0);
     expect(tree[0].useNumberSign).toBe(false);
@@ -35,28 +35,28 @@ describe('call expressions', () => {
     const tree = parse(`myFunc(   			  
       			 
     )`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args.length).toBe(0);
   });
 
   test('should allow single whitespace before parens', () => {
     const tree = parse(`myFunc ()`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args.length).toBe(0);
   });
 
   test('should allow single argument', () => {
     const tree = parse(`myFunc ( test )`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].value.value).toBe('test');
   });
 
   test('should allow multiple arguments', () => {
     const tree = parse(`myFunc ( test1, test2 )`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].value.value).toBe('test1');
     expect(tree[0].args[1].value.value).toBe('test2');
@@ -64,14 +64,14 @@ describe('call expressions', () => {
 
   test('should allow string as argument', () => {
     const tree = parse(`myFunc("testString")`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].value.value).toBe('testString');
   });
 
   test('should allow array as argument', () => {
     const tree = parse(`myFunc([1, 2, 3])`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].value.elements[0].value).toBe('1');
     expect(tree[0].args[0].value.elements[1].value).toBe('2');
@@ -80,7 +80,7 @@ describe('call expressions', () => {
 
   test('should allow struct as argument', () => {
     const tree = parse(`myFunc({test: myTest})`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].value.properties[0].key.value).toBe('test');
     expect(tree[0].args[0].value.properties[0].value.value).toBe('myTest');
@@ -88,7 +88,7 @@ describe('call expressions', () => {
 
   test('should allow named arguments', () => {
     const tree = parse(`myFunc(arg1 = "yay", arg2 ="woohoo")`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].arg.value).toBe('arg1');
     expect(tree[0].args[0].value.value).toBe('yay');
@@ -98,7 +98,7 @@ describe('call expressions', () => {
 
   test('should allow quoted named arguments', () => {
     const tree = parse(`myFunc("arg1"='yay', 'arg2'= "woohoo")`);
-    expect(tree[0].type).toBe('function');
+    expect(tree[0].type).toBe('Function');
     expect(tree[0].name).toBe('myFunc');
     expect(tree[0].args[0].arg.value).toBe('arg1');
     expect(tree[0].args[0].value.value).toBe('yay');
@@ -116,13 +116,13 @@ describe('call expressions', () => {
 describe('function declarations and expressions', () => {
   test('should identify function declaration', () => {
     const tree = parse(`function id() {}`);
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].name).toBe('id');
   });
 
   test('should identify function declaration with param', () => {
     const tree = parse(`function id(param1) {}`);
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].name).toBe('id');
     expect(tree[0].params.length).toBe(1);
   });
@@ -130,35 +130,35 @@ describe('function declarations and expressions', () => {
   test('should allow accessType before function keyword', () => {
     const tree = parse(`private function id() {}`);
     // console.log(util.inspect(tree, {depth: null, colors: true}));
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].accessType).toBe('private');
     expect(tree[0].name).toBe('id');
   });
 
   test('should allow returnType before function keyword', () => {
     const tree = parse(`string function id() {}`);
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     // console.log(util.inspect(tree, {depth: null, colors: true}));
-    expect(tree[0].returnType).toBe('string');
+    expect(tree[0].returnType).toBe('String');
     expect(tree[0].name).toBe('id');
   });
 
   test('should allow accessType and returnType before function keyword', () => {
     const tree = parse(`remote string function id() {}`);
-    expect(tree[0].type).toBe('functionDeclaration');
-    expect(tree[0].returnType).toBe('string');
+    expect(tree[0].type).toBe('FunctionDeclaration');
+    expect(tree[0].returnType).toBe('String');
     expect(tree[0].accessType).toBe('remote');
     expect(tree[0].name).toBe('id');
   });
 
   test('should not allow different keyword order before function keyword', () => {
     const tree = parse(`string remote function id() {}`);
-    expect(tree[0].type).not.toBe('functionDeclaration');
+    expect(tree[0].type).not.toBe('FunctionDeclaration');
   });
 
   test('should allow single attribute after function params', () => {
     const tree = parse(`function mxunitTest() order="1" {}`);
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].attributes[0].attr.value).toBe('order');
     expect(tree[0].attributes[0].value.value).toBe('1');
   });
@@ -167,13 +167,13 @@ describe('function declarations and expressions', () => {
     const tree = parse(
       `function mxunitTest() displayName="test" hint="myHint" {}`
     );
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].attributes.length).toBe(2);
   });
 
   test('should allow keywords before params', () => {
     const tree = parse(`function test(required numeric param1) {}`);
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].params.length).toBe(1);
     expect(tree[0].params[0].required).toBe(true);
     expect(tree[0].params[0].dataType).toBe('numeric');
@@ -184,7 +184,7 @@ describe('function declarations and expressions', () => {
     const tree = parse(
       `function test(required numeric param1, param2, string param3) {}`
     );
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].params.length).toBe(3);
     expect(tree[0].params[0].name).toBe('param1');
     expect(tree[0].params[0].dataType).toBe('numeric');
@@ -193,13 +193,13 @@ describe('function declarations and expressions', () => {
     expect(tree[0].params[1].required).toBe(false);
     expect(tree[0].params[1].dataType).toBe(null);
     expect(tree[0].params[2].name).toBe('param3');
-    expect(tree[0].params[2].dataType).toBe('string');
+    expect(tree[0].params[2].dataType).toBe('String');
     expect(tree[0].params[2].required).toBe(false);
   });
 
   test('should allow default values for params', () => {
     const tree = parse(`function test(required numeric param1 = 3) {}`);
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].params[0].default.value).toBe('3');
   });
 
@@ -238,7 +238,7 @@ describe('function declarations and expressions', () => {
 
   test('should allow omitted identifier', () => {
     const tree = parse(`function (required numeric param1 = 3) {}`);
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].params[0].name).toBe('param1');
   });
 
@@ -253,7 +253,7 @@ describe('function declarations and expressions', () => {
    {
 
   }`);
-    expect(tree[0].type).toBe('functionDeclaration');
+    expect(tree[0].type).toBe('FunctionDeclaration');
     expect(tree[0].name).toBe('test');
     expect(tree[0].params[0].name).toBe('param1');
     expect(tree[0].params[1].name).toBe('param2');

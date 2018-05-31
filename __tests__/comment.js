@@ -12,7 +12,7 @@ const util = require('util');
 describe('tag context comments', () => {
   test('should return a comment', () => {
     const tree = parse(`<!--- test --->`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(true);
     expect(tree[0].body).toBe(' test ');
     expect(tree[0].singleLine).toBe(true);
@@ -22,7 +22,7 @@ describe('tag context comments', () => {
     const tree = parse(`<!---
     test
     --->`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(true);
     expect(tree[0].body).toContain('test');
     expect(tree[0].singleLine).toBe(false);
@@ -30,7 +30,7 @@ describe('tag context comments', () => {
 
   test('should allow no whitespace comments', () => {
     const tree = parse(`<!---test--->`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(true);
     expect(tree[0].body).toBe('test');
     expect(tree[0].singleLine).toBe(true);
@@ -40,7 +40,7 @@ describe('tag context comments', () => {
     const tree = parse(`<!---
     Example: <cfset exampleVar = "exampleValue" />
     --->`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(true);
     expect(tree[0].body).toContain(
       'Example: <cfset exampleVar = "exampleValue" />'
@@ -50,7 +50,7 @@ describe('tag context comments', () => {
 
   test('should allow empty comments', () => {
     const tree = parse(`<!------>`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(true);
     expect(tree[0].body).toBe('');
     expect(tree[0].singleLine).toBe(true);
@@ -58,7 +58,7 @@ describe('tag context comments', () => {
 
   test('should allow empty comments with whitespace', () => {
     const tree = parse(`<!--- 	 --->`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(true);
     expect(tree[0].body).toBe(' \t ');
     expect(tree[0].singleLine).toBe(true);
@@ -68,7 +68,7 @@ describe('tag context comments', () => {
     const tree = parse(`<!--------------------------------
     sometimes used in heading
     ----------------------------->`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(true);
     expect(tree[0].body).toContain('sometimes used in heading');
     expect(tree[0].singleLine).toBe(false);
@@ -84,7 +84,7 @@ describe('tag context comments', () => {
 describe('script context comments', () => {
   test('should allow script style line comments', () => {
     const tree = parse(`// test`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(false);
     expect(tree[0].body).toBe(' test');
   });
@@ -92,28 +92,28 @@ describe('script context comments', () => {
   test('should line comments should end at line break', () => {
     const tree = parse(`// test
     more content`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(false);
     expect(tree[0].body).toBe(' test');
   });
 
   test('should allow no characters in body', () => {
     const tree = parse(`//`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(false);
     expect(tree[0].body).toBe('');
   });
 
   test('should allow script style block comments', () => {
     const tree = parse(`/* testing */`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(false);
     expect(tree[0].body).toBe(' testing ');
   });
 
   test('should allow empty script style block comments', () => {
     const tree = parse(`/* */`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(false);
     expect(tree[0].body).toBe(' ');
   });
@@ -123,7 +123,7 @@ describe('script context comments', () => {
     * test1
     * test2
     */`);
-    expect(tree[0].type).toBe('comment');
+    expect(tree[0].type).toBe('Comment');
     expect(tree[0].tagContext).toBe(false);
     expect(tree[0].body).toBe(` 
     * test1

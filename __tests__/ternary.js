@@ -7,7 +7,7 @@ const util = require('util');
 describe('ternary operator', () => {
   test('should return a ternary', () => {
     const tree = parse(`(true)?'true thing':'false thing'`);
-    expect(tree[0].type).toBe('ternary');
+    expect(tree[0].type).toBe('Ternary');
     expect(tree[0].condition).toBe('true');
     expect(tree[0].ifBlock.value).toBe('true thing');
     expect(tree[0].elseBlock.value).toBe('false thing');

@@ -4,10 +4,10 @@ const util = require('util');
 // to inspect a tree:
 // console.log(util.inspect(tree, {depth: null, colors: true}))
 
-describe('string', () => {
+describe('String', () => {
   test('should return a string', () => {
     const tree = parse(`"mystring"`);
-    expect(tree[0].type).toBe('string');
+    expect(tree[0].type).toBe('String');
     expect(tree[0].value).toBe('mystring');
   });
 
@@ -19,7 +19,7 @@ describe('string', () => {
 
   test('should allow /> in string', () => {
     const tree = parse(`"/>"`);
-    expect(tree[0].type).toBe('string');
+    expect(tree[0].type).toBe('String');
     expect(tree[0].value).toBe('/>');
   });
 
@@ -30,13 +30,13 @@ describe('string', () => {
   // My guess is this is just the way string literals work
   test('should allow escaped double quotes in string', () => {
     const tree = parse(`"test\\"something\\""`);
-    expect(tree[0].type).toBe('string');
+    expect(tree[0].type).toBe('String');
     expect(tree[0].value).toBe('test\\"something\\"');
   });
 
   test('should allow escaped single quotes in string', () => {
     const tree = parse(`'test\\'something\\''`);
-    expect(tree[0].type).toBe('string');
+    expect(tree[0].type).toBe('String');
     expect(tree[0].value).toBe("test\\'something\\'");
   });
 });

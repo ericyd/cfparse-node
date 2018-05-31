@@ -20,21 +20,21 @@ const util = require('util');
 describe('attributs', () => {
   test('should allow props without values', () => {
     const tree = parse(`<option disabled></option>`);
-    expect(tree[0].type).toBe('tag');
+    expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('option');
     expect(tree[0].attributes[0].attr.value).toBe('disabled');
   });
 
   test('should allow function calls as attributes', () => {
     const tree = parse(`<cfset myFunction() />`);
-    expect(tree[0].type).toBe('tag');
+    expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfset');
     expect(tree[0].attributes[0].attr.name).toBe('myFunction');
   });
 
   test('should allow function calls as attribute values', () => {
     const tree = parse(`<cfset myVar = myFunction() />`);
-    expect(tree[0].type).toBe('tag');
+    expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfset');
     expect(tree[0].attributes[0].attr.value).toBe('myVar');
     expect(tree[0].attributes[0].value.name).toBe('myFunction');
@@ -42,7 +42,7 @@ describe('attributs', () => {
 
   test('should allow boolean operators', () => {
     const tree = parse(`<cfif 1 NE 2><cfset i = '0' /></cfif>`);
-    expect(tree[0].type).toBe('tag');
+    expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfif');
     expect(tree[0].attributes[0].attr.value).toBe('1');
     expect(tree[0].attributes[0].value).toBe(null);
@@ -54,7 +54,7 @@ describe('attributs', () => {
 
   test('should allow struct literals as values', () => {
     const tree = parse(`<cfdump var = { test: 'testval' } />`);
-    expect(tree[0].type).toBe('tag');
+    expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdump');
     expect(tree[0].attributes[0].attr.value).toBe('var');
     expect(tree[0].attributes[0].value.properties[0].key.value).toBe('test');
@@ -65,7 +65,7 @@ describe('attributs', () => {
 
   test('should allow array literals as values', () => {
     const tree = parse(`<cfdump var = ['one'] />`);
-    expect(tree[0].type).toBe('tag');
+    expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdump');
     expect(tree[0].attributes[0].attr.value).toBe('var');
     expect(tree[0].attributes[0].value.elements.length).toBe(1);
@@ -74,14 +74,14 @@ describe('attributs', () => {
 
   test('should allow number literals as values', () => {
     const tree = parse(`<cfdump var = 0 />`);
-    expect(tree[0].type).toBe('tag');
+    expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdump');
     expect(tree[0].attributes[0].value.value).toBe('0');
   });
 
   test('should accept deferenced identifiers as values', () => {
     const tree = parse(`<cfdump var = #myVar# />`);
-    expect(tree[0].type).toBe('tag');
+    expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdump');
     expect(tree[0].attributes[0].attr.value).toBe('var');
     expect(tree[0].attributes[0].value.value).toBe('myVar');

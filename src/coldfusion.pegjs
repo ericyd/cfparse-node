@@ -19,6 +19,7 @@
 // * ObjectLiteral => Struct
 // * Removed RegularExpressions (no regex literals in ColdFusion AFAIK)
 // * Removed Elision, no such support in CF
+// * update buildList function
 //
 // [1] https://pegjs.org/
 // [2] https://medium.com/@daffl/beyond-regex-writing-a-parser-in-javascript-8c9ed10576a6
@@ -43,22 +44,6 @@
     CallExpression:   "callee",
     MemberExpression: "object",
   };
-  // function extractOptional(optional, index) {
-  //   return optional ? optional[index] : null;
-  // }
-
-  // function extractList(list, index) {
-  //   return list.map(function(element) { return element[index]; });
-  // }
-
-  // this was from javascript.pegjs
-  // personally I think it's easier to explicitly return the item you want
-  // in the property definition
-  // this is used to match things like (ws "," ws something) and extract the "something"
-  // I prefer to write (ws "," ws s:something {return s;})
-  // function buildList(head, tail, index) {
-  //   return [head].concat(extractList(tail, index));
-  // }
 
   function buildList(head, tail) {
     return [head].concat(tail);
@@ -206,10 +191,10 @@ Identifier
   = !ReservedWord name:IdentifierName { return name; }
 
 IdentifierName "identifier"
-  = head:IdentifierStart tail:IdentifierPart* {
+  = head:IdentifierStart tail:$IdentifierPart* {
       return {
         type: "Identifier",
-        name: head + tail.join("")
+        value: head + tail
       };
     }
 
@@ -1302,16 +1287,16 @@ AssignmentOperator
   / "|="
 
 Expression
-  = head:AssignmentExpression tail:(ws "," ws AssignmentExpression)* {
+  = head:AssignmentExpression tail:(ws "," ws a:AssignmentExpression {return a;})* {
       return tail.length > 0
-        ? { type: "SequenceExpression", expressions: buildList(head, tail, 3) }
+        ? { type: "SequenceExpression", expressions: buildList(head, tail) }
         : head;
     }
 
 ExpressionNoIn
-  = head:AssignmentExpressionNoIn tail:(ws "," ws AssignmentExpressionNoIn)* {
+  = head:AssignmentExpressionNoIn tail:(ws "," ws a:AssignmentExpressionNoIn {return a;})* {
       return tail.length > 0
-        ? { type: "SequenceExpression", expressions: buildList(head, tail, 3) }
+        ? { type: "SequenceExpression", expressions: buildList(head, tail) }
         : head;
     }
 

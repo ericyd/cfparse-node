@@ -29,11 +29,14 @@ describe('attributs', () => {
     const tree = parse(`<cfset myFunction() />`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfset');
-    expect(tree[0].attributes[0].attr.name).toBe('myFunction');
+    expect(tree[0].attributes[0].attr.callee.value).toBe('myFunction');
   });
 
+  // TODO: the attribute is getting set as an "AssignmentExpression"
+  // probably need to update the tag definition to work with that, because yeah I think attrs could be anything
   test('should allow function calls as attribute values', () => {
     const tree = parse(`<cfset myVar = myFunction() />`);
+    console.log(util.inspect(tree, {depth: null, colors: true}))
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfset');
     expect(tree[0].attributes[0].attr.value).toBe('myVar');

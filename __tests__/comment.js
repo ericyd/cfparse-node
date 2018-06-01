@@ -3,7 +3,8 @@ Comments can exist anywhere and should be treated as pre-formatted text.
 No modifications to the bodys or formatting of the comment
 */
 
-const parse = require('../src/parser');
+const parser = require('../src/parser'),
+    parse = parser.parse;
 
 const util = require('util');
 // to inspect a tree:

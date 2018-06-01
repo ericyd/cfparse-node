@@ -1,4 +1,5 @@
-const parse = require('../src/parser');
+const parser = require('../src/parser'),
+    parse = parser.parse;
 
 const util = require('util');
 // to inspect a tree:

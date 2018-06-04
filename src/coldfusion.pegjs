@@ -825,54 +825,36 @@ Ternary "Ternary"
 
 // BINARY Expression
 // ===================
+// Deprecated in favor of javascript example grammar
+// remove once binary expressions are tested
 
 // TODO figure out how to do this in a way that PEGjs doesn't mind
 // it complains about the possible infinite recursion, my guess is because it starts with an Expression which could be itself
 // but... that's true - the first part of the Expression could be anything
 // maybe need more subdivisions to be more explicit with which kind of operators
 // can act on which kinds of Expressions?
-BinaryExpression
-  = left:Expression ws operator:BinaryOperator ws right:Expression {
-    return {
-      type: "binaryExpression",
-      operator: operator,
-      left: left,
-      right: right
-    };
-  }
+// BinaryExpression
+//   = left:Expression ws operator:BinaryOperator ws right:Expression {
+//     return {
+//       type: "binaryExpression",
+//       operator: operator,
+//       left: left,
+//       right: right
+//     };
+//   }
 
-BinaryOperator
-  = DecisionOperator
-  / eq
-  / BooleanOperator
-  / ArithmeticBinaryOperator
-  / ArithmeticAssignmentOperator
-  / StringOperator
+// BinaryOperator
+//   = DecisionOperator
+//   / eq
+//   / BooleanOperator
+//   / ArithmeticBinaryOperator
+//   / ArithmeticAssignmentOperator
+//   / StringOperator
 
 
 // OPERATORS
 // ===================
-// https://help.adobe.com/en_US/ColdFusion/9.0/Developing/WSc3ff6d0ea77859461172e0811cbec09d55-7ffc.html#WSc3ff6d0ea77859461172e0811cbec09d55-7ffa
 
-DecisionOperator
-  = "eq"i
-  / "is"i
-  / 'equal'i
-  / "neq"i
-  / "is not"i
-  / "not equal"i
-  / "gt"i
-  / "greater than"i
-  / "gte"i
-  / "ge"i
-  / "greater than or equal"i
-  / "lt"i
-  / "less than"i
-  / "lte"i
-  / "le"i
-  / "less than or equal"i
-  / "contains"i
-  / "does not contain"i
 
 BooleanOperator
   = "!"
@@ -1070,6 +1052,7 @@ MultiplicativeOperator
   = $("*" !"=")
   / $("/" !"=")
   / $("%" !"=")
+  / $("mod"i !"=")
 
 AdditiveExpression
   = head:MultiplicativeExpression
@@ -1095,12 +1078,9 @@ RelationalExpression
     tail:(ws RelationalOperator ws ShiftExpression)*
     { return buildBinaryExpression(head, tail); }
 
+// https://help.adobe.com/en_US/ColdFusion/9.0/Developing/WSc3ff6d0ea77859461172e0811cbec09d55-7ffc.html#WSc3ff6d0ea77859461172e0811cbec09d55-7ffa
 RelationalOperator
-  = "<="
-  / ">="
-  / $("<" !"<")
-  / $(">" !">")
-  / $InstanceofToken
+  = RelationalOperatorNoIn
   / $InToken
 
 RelationalExpressionNoIn
@@ -1109,11 +1089,20 @@ RelationalExpressionNoIn
     { return buildBinaryExpression(head, tail); }
 
 RelationalOperatorNoIn
-  = "<="
-  / ">="
-  / $("<" !"<")
-  / $(">" !">")
-  / $InstanceofToken
+  = "not equal"i
+  / "gt"i
+  / "greater than"i
+  / "gte"i
+  / "ge"i
+  / "greater than or equal"i
+  / "lt"i
+  / "less than"i
+  / "lte"i
+  / "le"i
+  / "less than or equal"i
+  / "contains"i
+  / "does not contain"i
+  // / $InstanceofToken // TODO: verify this is not valid in CF
 
 EqualityExpression
   = head:RelationalExpression
@@ -1126,10 +1115,11 @@ EqualityExpressionNoIn
     { return buildBinaryExpression(head, tail); }
 
 EqualityOperator
-  = "==="
-  / "!=="
-  / "=="
-  / "!="
+  = "eq"i
+  / "is"i
+  / 'equal'i
+  / "neq"i
+  / "is not"i
 
 BitwiseANDExpression
   = head:EqualityExpression

@@ -11,17 +11,12 @@ describe('Array', () => {
     expect(tree[0].expression.type).toBe('Array');
   });
 
-  // TODO: the Expression rule already handles comma-delimited lists.
-  // That doesn't seem ideal to me, but might be OK to leave as-is.
-  // Need to decide if I want to override that behavior or change my tests to
-  // match the new schema
   test('should allow arbitrary whitespace', () => {
     const tree = parse(`[ 			
       'one'  			,
          'two',
       'three'
     ];`);
-    console.log(util.inspect(tree, {depth: null, colors: true}))
     expect(tree[0].expression.type).toBe('Array');
     expect(tree[0].expression.elements.length).toBe(3);
     expect(tree[0].expression.elements[0].value).toBe('one');
@@ -34,21 +29,25 @@ describe('Array', () => {
     expect(tree[0].expression.elements[0].value).toBe('one');
     expect(tree[0].expression.elements[1].type).toBe('String');
     expect(tree[0].expression.elements[1].value).toBe('two');
-    expect(tree[0].expression.elements[2].type).toBe('Function');
-    expect(tree[0].expression.elements[2].name).toBe('three');
+    expect(tree[0].expression.elements[2].type).toBe('CallExpression');
+    expect(tree[0].expression.elements[2].callee.value).toBe('three');
     expect(tree[0].expression.elements[3].type).toBe('Struct');
     expect(tree[0].expression.elements[3].properties[0].key.value).toBe('four');
     expect(tree[0].expression.elements[4].type).toBe('Array');
     expect(tree[0].expression.elements[4].elements[0].value).toBe('5');
   });
 
+  // TODO: bitwise operators don't exist in coldfusion, they are just functions (e.g. BitOr())
+  // need to remove bitwise operators and matching patterns from the grammar
+  // don't forget to note that in the prelude
   test('should throw on non-comma delimiters', () => {
+    let tree = parse(`['one'| 'two'];`);
+    console.log(util.inspect(tree, {depth: null, colors: true}))
     expect(() => {
       parse(`['one'| 'two'];`);
     }).toThrow();
   });
 
-  // this, like the struct, might be ok? It feels risky to assume, but in essence maybe this would catch typos?
   test('should throw on multiple elements without delimiters', () => {
     expect(() => {
       parse(`['one' 'two'];`);
@@ -70,7 +69,7 @@ describe('Array', () => {
   test('should allow ternary operators', () => {
     const tree = parse(`[true ? 'woo' : 'boo'];`);
     expect(tree[0].expression.type).toBe('Array');
-    expect(tree[0].expression.elements[0].type).toBe('Ternary');
+    expect(tree[0].expression.elements[0].type).toBe('ConditionalExpression');
   });
 
   test('should allow empty array', () => {

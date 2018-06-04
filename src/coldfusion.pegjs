@@ -769,8 +769,8 @@ PropertyAssignment
 Array "Array literal"
   = "[" ws
     values:(
-      head:Expression
-      tail:(ws comma ws e:Expression ws { return e; })*
+      head:AssignmentExpression
+      tail:(ws comma ws e:AssignmentExpression ws { return e; })*
       { return buildList(head, tail); }
     )?
     ws "]" { 

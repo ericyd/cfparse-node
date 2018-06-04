@@ -528,7 +528,7 @@ BalancedTag
   }
 
 UnBalancedTag
-  = "<" main:Identifier attributes:TagAttribute* ws ( ">" / "/>" ) {
+  = "<" main:Identifier ws attributes:Expression* ws ( ">" / "/>" ) {
     return {
       type: 'Tag',
       balanced: false,
@@ -538,7 +538,7 @@ UnBalancedTag
   }
 
 OpenTag
-  = "<" main:Identifier attributes:TagAttribute* ws ">" {
+  = "<" main:Identifier ws attributes:Expression* ws ">" {
     return {
       name: main.value,
       attributes: attributes
@@ -553,14 +553,15 @@ CloseTag
     }
   }
 
-TagAttribute
-  = ws attr:Expression value:(ws eq ws val:Expression {return val;})? { 
-    return {
-      type: 'attribute',
-      attr: attr,
-      value: value
-    };
-  }
+// deprecated?
+// TagAttribute
+//   = ws attr:Expression value:(ws eq ws val:Expression {return val;})? { 
+//     return {
+//       type: 'attribute',
+//       attr: attr,
+//       value: value
+//     };
+//   }
 
 
 

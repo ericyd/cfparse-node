@@ -647,7 +647,7 @@ FunctionDeclaration
         name: id,
         params: optionalList(params),
         body: body,
-        AccessType: a,
+        accessType: a,
         returnType: r,
         attributes: optionalList(attrs)
       };
@@ -686,7 +686,7 @@ FunctionParameter
       return {
         type: 'parameter',
         required: !!(req),
-        DataType: type,
+        dataType: type,
         name: name,
         default: defaultVal
       }

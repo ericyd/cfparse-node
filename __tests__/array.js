@@ -34,15 +34,10 @@ describe('Array', () => {
     expect(tree[0].expression.elements[3].type).toBe('Struct');
     expect(tree[0].expression.elements[3].properties[0].key.value).toBe('four');
     expect(tree[0].expression.elements[4].type).toBe('Array');
-    expect(tree[0].expression.elements[4].elements[0].value).toBe('5');
+    expect(tree[0].expression.elements[4].elements[0].value).toBe(5);
   });
 
-  // TODO: bitwise operators don't exist in coldfusion, they are just functions (e.g. BitOr())
-  // need to remove bitwise operators and matching patterns from the grammar
-  // don't forget to note that in the prelude
   test('should throw on non-comma delimiters', () => {
-    let tree = parse(`['one'| 'two'];`);
-    console.log(util.inspect(tree, {depth: null, colors: true}))
     expect(() => {
       parse(`['one'| 'two'];`);
     }).toThrow();

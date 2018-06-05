@@ -1,16 +1,3 @@
-/*
-In tag syntax, attributes can be essentially anything
-	(with the possible exception of another tag???)
-
-Should be able to handle
-* function calls
-* dereferenced variables
-* strings
-* numbers
-* boolean operators
-* and probably others as well?
-*/
-
 const parser = require('../src/parser'),
     parse = parser.parse;
 
@@ -33,8 +20,6 @@ describe('attributs', () => {
     expect(tree[0].attributes[0].callee.value).toBe('myFunction');
   });
 
-  // TODO: the attribute is getting set as an "AssignmentExpression"
-  // probably need to update the tag definition to work with that, because yeah I think attrs could be anything
   test('should allow function calls as attribute values', () => {
     const tree = parse(`<cfset myVar = myFunction() />`);
     expect(tree[0].type).toBe('Tag');
@@ -43,18 +28,13 @@ describe('attributs', () => {
     expect(tree[0].attributes[0].right.callee.value).toBe('myFunction');
   });
 
-  // TODO: need to add CF-specific operators to Logic and Relational rules
   test('should allow boolean operators', () => {
-    const tree = parse(`<cfif 1 NE 2><cfset i = '0' /></cfif>`);
-    console.log(util.inspect(tree, {depth: null, colors: true}))
+    const tree = parse(`<cfif 1 NEQ 2><cfset i = '0' /></cfif>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfif');
-    expect(tree[0].attributes[0].attr.value).toBe(1);
-    expect(tree[0].attributes[0].value).toBe(null);
-    expect(tree[0].attributes[1].attr.value).toBe('NE');
-    expect(tree[0].attributes[1].value).toBe(null);
-    expect(tree[0].attributes[2].attr.value).toBe('2');
-    expect(tree[0].attributes[2].value).toBe(null);
+    expect(tree[0].attributes[0].left.value).toBe(1);
+    expect(tree[0].attributes[0].right.value).toBe(2);
+    expect(tree[0].attributes[0].operator).toBe("NEQ");
   });
 
   test('should allow struct literals as values', () => {

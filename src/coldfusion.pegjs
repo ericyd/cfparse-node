@@ -20,6 +20,7 @@
 // * Removed RegularExpressions (no regex literals in ColdFusion AFAIK)
 // * Removed Elision, no such support in CF
 // * update buildList function
+// * remove bitwise and shift rules
 //
 // [1] https://pegjs.org/
 // [2] https://medium.com/@daffl/beyond-regex-writing-a-parser-in-javascript-8c9ed10576a6
@@ -242,7 +243,6 @@ Keyword
   / ContinueToken
   / DebuggerToken
   / DefaultToken
-  / DeleteToken
   / DoToken
   / ElseToken
   / FinallyToken
@@ -257,9 +257,7 @@ Keyword
   / ThisToken
   / ThrowToken
   / TryToken
-  / TypeofToken
   / VarToken
-  / VoidToken
   / WhileToken
   / WithToken
   / ExtendsToken
@@ -412,7 +410,6 @@ ConstToken      = "const"i         !IdentifierPart
 ContinueToken   = "continue"i      !IdentifierPart
 DebuggerToken   = "debugger"i      !IdentifierPart
 DefaultToken    = "default"i       !IdentifierPart
-DeleteToken     = "delete"i        !IdentifierPart
 DoToken         = "do"i            !IdentifierPart
 ElseToken       = "else"i          !IdentifierPart
 EnumToken       = "enum"i          !IdentifierPart
@@ -438,9 +435,7 @@ ThisToken       = "this"i          !IdentifierPart
 ThrowToken      = "throw"i         !IdentifierPart
 TrueToken       = "true"i / "yes"i !IdentifierPart
 TryToken        = "try"i           !IdentifierPart
-TypeofToken     = "typeof"i        !IdentifierPart
 VarToken        = "var"i           !IdentifierPart
-VoidToken       = "void"i          !IdentifierPart
 WhileToken      = "while"i         !IdentifierPart
 WithToken       = "with"i          !IdentifierPart
 
@@ -855,18 +850,6 @@ Ternary "Ternary"
 // OPERATORS
 // ===================
 
-
-BooleanOperator
-  = "!"
-  / "&&"
-  / "||"
-  / "not"i
-  / "and"i
-  / "or"i
-  / "xor"i
-  / "eqv"i
-  / "imp"i
-
 ArithmeticBinaryOperator
   = "+"
   / "-"
@@ -877,25 +860,7 @@ ArithmeticBinaryOperator
   / "^"
   / "mod"i
 
-// can be prefix or postfix
-ArithmeticUnaryOperator
-  = "++"
-  / "--"
-  / "+"
-  / "-"
 
-// TODO: should this just be an `assignmentOperator`
-ArithmeticAssignmentOperator
-  = "+="
-  / "-="
-  / "*="
-  / "/="
-  / "%="
-  / "&=" // Strings, not exactly arithmetic
-
-// String concatenation
-StringOperator
-  = "&"
 
 
 
@@ -1032,16 +997,15 @@ UnaryExpression
       };
     }
 
+// TODO: are all of these tokens valid in tags?
 UnaryOperator
-  = $DeleteToken
-  / $VoidToken
-  / $TypeofToken
-  / "++"
+  = "++"
   / "--"
   / $("+" !"=")
   / $("-" !"=")
   / "~"
   / "!"
+  / "not"i
 
 MultiplicativeExpression
   = head:UnaryExpression
@@ -1053,6 +1017,8 @@ MultiplicativeOperator
   / $("/" !"=")
   / $("%" !"=")
   / $("mod"i !"=")
+  // String concatenation - does this work here?
+  / "&"
 
 AdditiveExpression
   = head:MultiplicativeExpression
@@ -1063,29 +1029,19 @@ AdditiveOperator
   = $("+" ![+=])
   / $("-" ![-=])
 
-ShiftExpression
-  = head:AdditiveExpression
-    tail:(ws ShiftOperator ws AdditiveExpression)*
-    { return buildBinaryExpression(head, tail); }
-
-ShiftOperator
-  = $("<<"  !"=")
-  / $(">>>" !"=")
-  / $(">>"  !"=")
-
 RelationalExpression
-  = head:ShiftExpression
-    tail:(ws RelationalOperator ws ShiftExpression)*
+  = head:AdditiveExpression
+    tail:(ws RelationalOperator ws AdditiveExpression)*
     { return buildBinaryExpression(head, tail); }
 
-// https://help.adobe.com/en_US/ColdFusion/9.0/Developing/WSc3ff6d0ea77859461172e0811cbec09d55-7ffc.html#WSc3ff6d0ea77859461172e0811cbec09d55-7ffa
+// https://cfdocs.org/operators
 RelationalOperator
   = RelationalOperatorNoIn
   / $InToken
 
 RelationalExpressionNoIn
-  = head:ShiftExpression
-    tail:(ws RelationalOperatorNoIn ws ShiftExpression)*
+  = head:AdditiveExpression
+    tail:(ws RelationalOperatorNoIn ws AdditiveExpression)*
     { return buildBinaryExpression(head, tail); }
 
 RelationalOperatorNoIn
@@ -1102,6 +1058,11 @@ RelationalOperatorNoIn
   / "less than or equal"i
   / "contains"i
   / "does not contain"i
+  // TODO: script only - can/should this rule be separated by script/tag syntax?
+  / "<="
+  / ">="
+  / $("<" !"<")
+  / $(">" !">")
   // / $InstanceofToken // TODO: verify this is not valid in CF
 
 EqualityExpression
@@ -1120,58 +1081,25 @@ EqualityOperator
   / 'equal'i
   / "neq"i
   / "is not"i
-
-BitwiseANDExpression
-  = head:EqualityExpression
-    tail:(ws BitwiseANDOperator ws EqualityExpression)*
-    { return buildBinaryExpression(head, tail); }
-
-BitwiseANDExpressionNoIn
-  = head:EqualityExpressionNoIn
-    tail:(ws BitwiseANDOperator ws EqualityExpressionNoIn)*
-    { return buildBinaryExpression(head, tail); }
-
-BitwiseANDOperator
-  = $("&" ![&=])
-
-BitwiseXORExpression
-  = head:BitwiseANDExpression
-    tail:(ws BitwiseXOROperator ws BitwiseANDExpression)*
-    { return buildBinaryExpression(head, tail); }
-
-BitwiseXORExpressionNoIn
-  = head:BitwiseANDExpressionNoIn
-    tail:(ws BitwiseXOROperator ws BitwiseANDExpressionNoIn)*
-    { return buildBinaryExpression(head, tail); }
-
-BitwiseXOROperator
-  = $("^" !"=")
-
-BitwiseORExpression
-  = head:BitwiseXORExpression
-    tail:(ws BitwiseOROperator ws BitwiseXORExpression)*
-    { return buildBinaryExpression(head, tail); }
-
-BitwiseORExpressionNoIn
-  = head:BitwiseXORExpressionNoIn
-    tail:(ws BitwiseOROperator ws BitwiseXORExpressionNoIn)*
-    { return buildBinaryExpression(head, tail); }
-
-BitwiseOROperator
-  = $("|" ![|=])
+  // TODO: script only - can/should this rule be separated by script/tag syntax?
+  / "=="
+  / "!="
 
 LogicalANDExpression
-  = head:BitwiseORExpression
-    tail:(ws LogicalANDOperator ws BitwiseORExpression)*
+  = head:EqualityExpression
+    tail:(ws LogicalANDOperator ws EqualityExpression)*
     { return buildLogicalExpression(head, tail); }
 
 LogicalANDExpressionNoIn
-  = head:BitwiseORExpressionNoIn
-    tail:(ws LogicalANDOperator ws BitwiseORExpressionNoIn)*
+  = head:EqualityExpressionNoIn
+    tail:(ws LogicalANDOperator ws EqualityExpressionNoIn)*
     { return buildLogicalExpression(head, tail); }
 
 LogicalANDOperator
   = "&&"
+  / "and"i
+  / "eqv"i // equivalence (left and right must evaluate to the same boolean)
+  / "impl"i // implication
 
 LogicalORExpression
   = head:LogicalANDExpression
@@ -1185,6 +1113,8 @@ LogicalORExpressionNoIn
 
 LogicalOROperator
   = "||"
+  / "or"i
+  / "xor"i // exclusive or
 
 ConditionalExpression
   = test:LogicalORExpression ws
@@ -1270,12 +1200,7 @@ AssignmentOperator
   / "%="
   / "+="
   / "-="
-  / "<<="
-  / ">>="
-  / ">>>="
-  / "&="
-  / "^="
-  / "|="
+  / "&=" // Strings, not exactly arithmetic
 
 Expression
   = head:AssignmentExpression tail:(ws "," ws a:AssignmentExpression {return a;})* {

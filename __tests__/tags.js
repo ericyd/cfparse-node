@@ -6,7 +6,7 @@ const util = require('util');
 // console.log(util.inspect(tree, {depth: null, colors: true}))
 
 describe('tags', () => {
-  test('should return a node', () => {
+  test('should return a tag', () => {
     const tree = parse(`<cfoutput></cfoutput>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfoutput');
@@ -16,34 +16,34 @@ describe('tags', () => {
     const tree = parse(`<cfoutput prop='val'></cfoutput>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfoutput');
-    expect(tree[0].attributes[0].attr.value).toBe('prop');
-    expect(tree[0].attributes[0].value.value).toBe('val');
+    expect(tree[0].attributes[0].left.value).toBe('prop');
+    expect(tree[0].attributes[0].right.value).toBe('val');
   });
 
   test('should get attributes in double quotes', () => {
     const tree = parse(`<cfoutput prop="val"></cfoutput>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfoutput');
-    expect(tree[0].attributes[0].attr.value).toBe('prop');
-    expect(tree[0].attributes[0].value.value).toBe('val');
+    expect(tree[0].attributes[0].left.value).toBe('prop');
+    expect(tree[0].attributes[0].right.value).toBe('val');
   });
 
   test('should get multiple attributes', () => {
     const tree = parse(`<cfoutput prop1="val1" prop2="val2"></cfoutput>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfoutput');
-    expect(tree[0].attributes[0].attr.value).toBe('prop1');
-    expect(tree[0].attributes[0].value.value).toBe('val1');
-    expect(tree[0].attributes[1].attr.value).toBe('prop2');
-    expect(tree[0].attributes[1].value.value).toBe('val2');
+    expect(tree[0].attributes[0].left.value).toBe('prop1');
+    expect(tree[0].attributes[0].right.value).toBe('val1');
+    expect(tree[0].attributes[1].left.value).toBe('prop2');
+    expect(tree[0].attributes[1].right.value).toBe('val2');
   });
 
   test('should ignore whitespace in attribute declarations', () => {
     const tree = parse(`<cfoutput prop =	"val"></cfoutput>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfoutput');
-    expect(tree[0].attributes[0].attr.value).toBe('prop');
-    expect(tree[0].attributes[0].value.value).toBe('val');
+    expect(tree[0].attributes[0].left.value).toBe('prop');
+    expect(tree[0].attributes[0].right.value).toBe('val');
   });
 
   test('should ignore line breaks in attribute declarations', () => {
@@ -52,8 +52,8 @@ describe('tags', () => {
     "val"></cfoutput>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfoutput');
-    expect(tree[0].attributes[0].attr.value).toBe('prop');
-    expect(tree[0].attributes[0].value.value).toBe('val');
+    expect(tree[0].attributes[0].left.value).toBe('prop');
+    expect(tree[0].attributes[0].right.value).toBe('val');
   });
 
   test('should allow any characters in attribute declarations', () => {
@@ -62,8 +62,8 @@ describe('tags', () => {
     );
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdiv');
-    expect(tree[0].attributes[0].attr.value).toBe('style');
-    expect(tree[0].attributes[0].value.value).toBe(
+    expect(tree[0].attributes[0].left.value).toBe('style');
+    expect(tree[0].attributes[0].right.value).toBe(
       "1234567890-=~!@#$%^&*()_+[]{}/|;':,.?"
     );
   });
@@ -90,7 +90,7 @@ describe('tags', () => {
   });
 
   test('should identify closed nested tags', () => {
-    const tree = parse(`<cfoutput><cfset var="value" /></cfoutput>`);
+    const tree = parse(`<cfoutput><cfset myVar="value" /></cfoutput>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfoutput');
     expect(tree[0].balanced).toBe(true);
@@ -102,44 +102,41 @@ describe('tags', () => {
     const tree = parse(`<cfdiv class="<cfif true>active</cfif>"></cfdiv>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdiv');
-    expect(tree[0].attributes[0].attr.value).toBe('class');
-    expect(tree[0].attributes[0].value.value).toBe('<cfif true>active</cfif>');
+    expect(tree[0].attributes[0].left.value).toBe('class');
+    expect(tree[0].attributes[0].right.value).toBe('<cfif true>active</cfif>');
   });
 
   // TODO: this breaks the parser
-  test.skip('should allow non-ascii chars in props', () => {
+  test('should allow non-ascii chars in props', () => {
     const tree = parse(`<cfdiv class="√↓►;)┴≡±¡╥-╝åD░║«Y╚á"></cfdiv>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdiv');
-    expect(tree[0].attributes[0].attr).toBe('class');
-    expect(tree[0].attributes[0].value).toBe('√↓►;)┴≡±¡╥-╝åD░║«Y╚á');
+    expect(tree[0].attributes[0].left.value).toBe('class');
+    expect(tree[0].attributes[0].right.value).toBe('√↓►;)┴≡±¡╥-╝åD░║«Y╚á');
   });
 
   // TODO: This returns false, returns a tree != original body
-  test.skip('should allow /> in prop', () => {
+  test('should allow /> in prop', () => {
     const tree = parse(`<cfdiv prop="/>">body</div>`);
-    console.log(util.inspect(tree, { depth: null, colors: true }));
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdiv');
-    expect(tree[0].attributes[0].attr.value).toBe('prop');
-    expect(tree[0].attributes[0].value.value).toBe('/>');
+    expect(tree[0].attributes[0].left.value).toBe('prop');
+    expect(tree[0].attributes[0].right.value).toBe('/>');
   });
 
-  test.skip('should allow escaped double quotes in props', () => {
-    const tree = parse(`<cfdiv prop="test\"something\"">body</div>`);
-    console.log(util.inspect(tree, { depth: null, colors: true }));
+  test('should allow escaped double quotes in props', () => {
+    const tree = parse(`<cfdiv prop="test\\"something\\"">body</div>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdiv');
-    expect(tree[0].attributes[0].attr.value).toBe('prop');
-    expect(tree[0].attributes[0].value.value).toBe('test"something"');
+    expect(tree[0].attributes[0].left.value).toBe('prop');
+    expect(tree[0].attributes[0].right.value).toBe('test"something"');
   });
 
-  test.skip('should allow escaped single quotes in props', () => {
-    const tree = parse(`<cfdiv prop='test\'something\''>body</div>`);
-    console.log(util.inspect(tree, { depth: null, colors: true }));
+  test('should allow escaped single quotes in props', () => {
+    const tree = parse(`<cfdiv prop='test\\'something\\''>body</div>`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdiv');
-    expect(tree[0].attributes[0].attr.value).toBe('prop');
-    expect(tree[0].attributes[0].value.value).toBe("test'something'");
+    expect(tree[0].attributes[0].left.value).toBe('prop');
+    expect(tree[0].attributes[0].right.value).toBe("test'something'");
   });
 });

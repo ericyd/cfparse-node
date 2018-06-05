@@ -106,7 +106,6 @@ describe('tags', () => {
     expect(tree[0].attributes[0].right.value).toBe('<cfif true>active</cfif>');
   });
 
-  // TODO: this breaks the parser
   test('should allow non-ascii chars in props', () => {
     const tree = parse(`<cfdiv class="√↓►;)┴≡±¡╥-╝åD░║«Y╚á"></cfdiv>`);
     expect(tree[0].type).toBe('Tag');
@@ -115,7 +114,6 @@ describe('tags', () => {
     expect(tree[0].attributes[0].right.value).toBe('√↓►;)┴≡±¡╥-╝åD░║«Y╚á');
   });
 
-  // TODO: This returns false, returns a tree != original body
   test('should allow /> in prop', () => {
     const tree = parse(`<cfdiv prop="/>">body</div>`);
     expect(tree[0].type).toBe('Tag');

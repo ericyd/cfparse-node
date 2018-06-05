@@ -270,11 +270,11 @@ Literal
   / String
 
 NullLiteral
-  = NullToken { return { type: "Literal", value: "null" }; }
+  = NullToken { return { type: "Literal", value: null }; }
 
 BooleanLiteral
-  = TrueToken  { return { type: "Literal", value: "true"  }; }
-  / FalseToken { return { type: "Literal", value: "false" }; }
+  = TrueToken  { return { type: "Literal", value: true  }; }
+  / FalseToken { return { type: "Literal", value: false }; }
 
 // The "!(IdentifierStart / DecimalDigit)" predicate is not part of the official
 // grammar, it comes from text in section 7.8.3.
@@ -1117,29 +1117,29 @@ LogicalOROperator
   / "xor"i // exclusive or
 
 ConditionalExpression
-  = test:LogicalORExpression ws
+  = condition:LogicalORExpression ws
     "?" ws consequent:AssignmentExpression ws
     ":" ws alternate:AssignmentExpression
     {
       return {
         type: "ConditionalExpression",
-        test: test,
-        consequent: consequent,
-        alternate: alternate
+        condition: condition,
+        truthy: consequent,
+        falsey: alternate
       };
     }
   / LogicalORExpression
 
 ConditionalExpressionNoIn
-  = test:LogicalORExpressionNoIn ws
+  = condition:LogicalORExpressionNoIn ws
     "?" ws consequent:AssignmentExpression ws
     ":" ws alternate:AssignmentExpressionNoIn
     {
       return {
         type: "ConditionalExpression",
-        test: test,
-        consequent: consequent,
-        alternate: alternate
+        condition: condition,
+        truthy: consequent,
+        falsey: alternate
       };
     }
   / LogicalORExpressionNoIn

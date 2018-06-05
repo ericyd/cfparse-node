@@ -8,21 +8,19 @@ const util = require('util');
 describe('identifiers', () => {
   test('should return a identifier', () => {
     const tree = parse(`myVar;`);
-    expect(tree[0].type).toBe('Identifier');
-    expect(tree[0].value).toBe('myVar');
+    expect(tree[0].expression.type).toBe('Identifier');
+    expect(tree[0].expression.value).toBe('myVar');
   });
 
   test('should identify evaluated identifiers', () => {
     const tree = parse(`#myVar#;`);
-    expect(tree[0].type).toBe('Identifier');
-    expect(tree[0].value).toBe('myVar');
-    expect(tree[0].useNumberSign).toBe(true);
+    expect(tree[0].expression.type).toBe('Identifier');
+    expect(tree[0].expression.value).toBe('myVar');
   });
 
   test('should identify non-evaluated identifiers', () => {
     const tree = parse(`myVar;`);
-    expect(tree[0].type).toBe('Identifier');
-    expect(tree[0].value).toBe('myVar');
-    expect(tree[0].useNumberSign).toBe(false);
+    expect(tree[0].expression.type).toBe('Identifier');
+    expect(tree[0].expression.value).toBe('myVar');
   });
 });

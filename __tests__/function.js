@@ -8,10 +8,10 @@ const util = require('util');
 describe('call expressions', () => {
   test('should identify evaluated functions', () => {
     const tree = parse(`#myFunc()#;`);
-    expect(tree[0].type).toBe('Function');
-    expect(tree[0].callee.value).toBe('myFunc');
-    expect(tree[0].arguments.length).toBe(0);
-    expect(tree[0].useNumberSign).toBe(true);
+    expect(tree[0].expression.type).toBe('CallExpression');
+    expect(tree[0].expression.callee.value).toBe('myFunc');
+    expect(tree[0].expression.arguments.length).toBe(0);
+    expect(tree[0].expression.evaluated).toBe(true);
   });
 
   test('should identify non-evaluated functions', () => {
@@ -22,7 +22,7 @@ describe('call expressions', () => {
   });
 
   // TODO: is this a requirement that it throw? might just return false, which should be OK
-  test.skip('should throw on unmatches hashtags', () => {
+  test('should throw on unmatches hashtags', () => {
     expect(() => {
       parse(`#myFunc()`);
     }).toThrow();

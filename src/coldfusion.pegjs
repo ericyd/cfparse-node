@@ -548,19 +548,6 @@ CloseTag
     }
   }
 
-// deprecated?
-// TagAttribute
-//   = ws attr:Expression value:(ws eq ws val:Expression {return val;})? { 
-//     return {
-//       type: 'attribute',
-//       attr: attr,
-//       value: value
-//     };
-//   }
-
-
-
-
 text
   = characters:$(!("<" / "</") c:any !(">" / "--->"))+ {
     return {
@@ -568,18 +555,6 @@ text
         value: characters
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -600,10 +575,6 @@ doublequote_character
 
 singlequote_character
   = (!"'") c:character { return c; }
-
-
-
-
 
 
 
@@ -714,17 +685,6 @@ Argument "Argument"
 
 
 
-
-
-// NUMBER
-// ===================
-Number "number"
-  = [0-9\.]+
-
-
-
-
-
 // STRUCT
 // ===================
 // ColdFusion does not accept comma after final property assignment
@@ -751,12 +711,6 @@ PropertyAssignment
   }
 
 
-
-
-
-
-
-
 // ARRAY
 // ===================
 // from https://github.com/pegjs/pegjs/blob/master/examples/json.pegjs
@@ -779,99 +733,21 @@ Array "Array literal"
 
 
 
-// TERNARY
-// ===================
-
-// Ternary "Ternary" =
-//   condition:(Expression ws)* ws questionmark ws ifBlock:Expression ws colon ws elseBlock:Expression {
-//     return {
-//       type: 'Ternary',
-//       condition: condition,
-//       ifBlock: ifBlock,
-//       elseBlock: elseBlock
-//     }
-//   }
-
-Ternary "Ternary"
-  = "Ternary?something:somethingelse"
-
-
-
-
-
-
-// Argument = path
-// 
-// path =
-//   first:Identifier rest:("." s:Identifier { return s; })* {
-//     return {
-//       type: 'path',
-//       value: [first].concat(rest)
-//     };
-//   }
-
-
-
-
-
-
-
-
-
-// BINARY Expression
-// ===================
-// Deprecated in favor of javascript example grammar
-// remove once binary expressions are tested
-
-// TODO figure out how to do this in a way that PEGjs doesn't mind
-// it complains about the possible infinite recursion, my guess is because it starts with an Expression which could be itself
-// but... that's true - the first part of the Expression could be anything
-// maybe need more subdivisions to be more explicit with which kind of operators
-// can act on which kinds of Expressions?
-// BinaryExpression
-//   = left:Expression ws operator:BinaryOperator ws right:Expression {
-//     return {
-//       type: "binaryExpression",
-//       operator: operator,
-//       left: left,
-//       right: right
-//     };
-//   }
-
-// BinaryOperator
-//   = DecisionOperator
-//   / eq
-//   / BooleanOperator
-//   / ArithmeticBinaryOperator
-//   / ArithmeticAssignmentOperator
-//   / StringOperator
-
-
-// OPERATORS
-// ===================
-
-ArithmeticBinaryOperator
-  = "+"
-  / "-"
-  / "*"
-  / "/"
-  / "%"
-  / "\\" // integer division - will this cause issues with escape chars?
-  / "^"
-  / "mod"i
-
-
-
-
-
-
 
 
 // EXPRESSIONS
 // ===================
 
-
 PrimaryExpression
+  = part:PrimaryExpressionPart {
+    // allow evaluated to be overwritten if `part` already has property
+    return Object.assign({ evaluated: false }, part); 
+  }
+  / "#" ws part:PrimaryExpressionPart ws "#" {
+    return Object.assign(part, { evaluated: true });
+  }
+
+PrimaryExpressionPart
   = ThisToken { return { type: "ThisExpression" }; }
   / Identifier
   / Literal
@@ -1019,6 +895,8 @@ MultiplicativeOperator
   / $("mod"i !"=")
   // String concatenation - does this work here?
   / "&"
+  // integer division - will this cause issues with escape chars?
+  / "\\"
 
 AdditiveExpression
   = head:MultiplicativeExpression
@@ -1202,15 +1080,35 @@ AssignmentOperator
   / "-="
   / "&=" // Strings, not exactly arithmetic
 
+// TODO: allowing any expression to be wrapped in number signs is probably not ideal,
+// but not sure what the parameters are on it exactly
+ExpressionPart
+  = part:AssignmentExpression {
+    // allow evaluated to be overwritten if `part` already has property
+    return Object.assign({ evaluated: false }, part);
+  }
+  / "#" ws part:AssignmentExpression ws "#" {
+    return Object.assign(part, { evaluated: true });
+  }
+
+ExpressionPartNoIn
+  = part:AssignmentExpressionNoIn {
+    // allow evaluated to be overwritten if `part` already has property
+    return Object.assign({ evaluated: false }, part);
+  }
+  / "#" ws part:AssignmentExpressionNoIn ws "#" {
+    return Object.assign(part, { evaluated: true });
+  }
+
 Expression
-  = head:AssignmentExpression tail:(ws "," ws a:AssignmentExpression {return a;})* {
+  = head:ExpressionPart tail:(ws "," ws a:ExpressionPart {return a;})* {
       return tail.length > 0
         ? { type: "SequenceExpression", expressions: buildList(head, tail) }
         : head;
     }
 
 ExpressionNoIn
-  = head:AssignmentExpressionNoIn tail:(ws "," ws a:AssignmentExpressionNoIn {return a;})* {
+  = head:ExpressionPartNoIn tail:(ws "," ws a:ExpressionPartNoIn {return a;})* {
       return tail.length > 0
         ? { type: "SequenceExpression", expressions: buildList(head, tail) }
         : head;

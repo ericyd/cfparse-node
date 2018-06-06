@@ -16,11 +16,13 @@ describe('identifiers', () => {
     const tree = parse(`#myVar#;`);
     expect(tree[0].expression.type).toBe('Identifier');
     expect(tree[0].expression.value).toBe('myVar');
+    expect(tree[0].expression.evaluated).toBe(true);
   });
 
   test('should identify non-evaluated identifiers', () => {
     const tree = parse(`myVar;`);
     expect(tree[0].expression.type).toBe('Identifier');
     expect(tree[0].expression.value).toBe('myVar');
+    expect(tree[0].expression.evaluated).toBe(false);
   });
 });

@@ -64,13 +64,13 @@ describe('attributs', () => {
     expect(tree[0].attributes[0].right.value).toBe(0);
   });
 
-  // TODO: Need to add "number sign" literals as parsing rule
   test('should accept deferenced identifiers as values', () => {
-    const tree = parse(`<cfdump myVar = #myVar# />`);
+    const tree = parse(`<cfdump myVar = #myValue# />`);
     expect(tree[0].type).toBe('Tag');
     expect(tree[0].name).toBe('cfdump');
-    expect(tree[0].attributes[0].attr.value).toBe('myVar');
-    expect(tree[0].attributes[0].value.value).toBe('myVar');
-    expect(tree[0].attributes[0].value.useNumberSign).toBe(true);
+    expect(tree[0].attributes[0].left.value).toBe('myVar');
+    expect(tree[0].attributes[0].right.value).toBe('myValue');
+    expect(tree[0].attributes[0].right.evaluated).toBe(true);
+    expect(tree[0].attributes[0].evaluated).toBe(false);
   });
 });
